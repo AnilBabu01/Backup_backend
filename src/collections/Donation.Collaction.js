@@ -541,6 +541,9 @@ class DonationCollaction {
     return checkVoucherNumber;
   };
 
+
+  
+
   addElecDonation = async (req, voucherNo, receipt, assv) => {
     try {
       const {
@@ -2447,23 +2450,18 @@ class DonationCollaction {
     let { fromDate, toDate, user, type } = req.query;
     let from = new Date(fromDate);
     let to = new Date(toDate);
-
     let whereClause = {};
     let whereClause1 = {};
     let whereClauseinc = {};
-
     if (user) {
       whereClause1.created_by = user;
     }
-
     if (type) {
       whereClause.TYPE = type;
     }
-
     if (type) {
       whereClauseinc.type = type;
     }
-
     if (fromDate && toDate) {
       whereClause.DATE_OF_DAAN = { [Op.between]: [from, to] };
       whereClause1.donation_date = { [Op.between]: [from, to] };
@@ -2500,7 +2498,6 @@ class DonationCollaction {
       where: whereClause1,
       group: ["modeOfDonation", "type"],
     });
-    console.log(tbl_elec_donations_result);
     const tbl_manual_donations_result = await TblmanualDonation.findAll({
       attributes: [
         "modeOfDonation",
@@ -2616,6 +2613,7 @@ class DonationCollaction {
     return result;
   };
 
+  
   employeeChangePass = async (req) => {
     let userId = req.user.id;
     let user;
@@ -3390,6 +3388,7 @@ class DonationCollaction {
         ],
       ],
       where: {
+        PAYMENT_STATUS:1,
         DATE_OF_DAAN: {
           [Op.between]: [startOfToday, endOfToday],
         },

@@ -20,15 +20,15 @@ const GenerateVoucher = catchAsync(async (req, res) => {
 const getVoucherEach = catchAsync(async (req, res) => {
   const lastID = await DonationCollection.getElecLastID();
   let voucherNo = lastID + 1;
+
+  
   voucherNo = parseInt(voucherNo).toLocaleString("en-US", {
     minimumIntegerDigits: 4,
     useGrouping: false,
   });
-
   let checkVoucherNumber = await DonationCollection.checkVoucherNumberExists(
     voucherNo
   );
-
   if (checkVoucherNumber) {
     console.log(Number(voucherNo) + 1, "NUMBER VOUCHER");
     let exist = Number(voucherNo) + 1;
@@ -46,7 +46,6 @@ const getVoucherEach = catchAsync(async (req, res) => {
       voucherNo = fk;
     }
   }
-
   let isCancelled = await DonationCollection.getCancelledVoucher(voucherNo);
   let checking;
   if (isCancelled) {
@@ -60,8 +59,6 @@ const getVoucherEach = catchAsync(async (req, res) => {
   } else {
     checking = await VoucherCollection.checkVoucher(req, voucherNo);
   }
-
-
 
   if (checking.status === true) {
     console.log("done");
@@ -91,7 +88,6 @@ const getVoucherEach = catchAsync(async (req, res) => {
   if (!voucherNo) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
   }
-
   if(voucherNo){
     let exist = Number(voucherNo)
   let fk = parseInt(exist).toLocaleString("en-US", {
@@ -109,9 +105,12 @@ const getVoucherEach = catchAsync(async (req, res) => {
   }
   }
 
+
+
+
   res.send({
     status: true,
-    data: voucherNo,
+    data: 7,
   });
 });
 
