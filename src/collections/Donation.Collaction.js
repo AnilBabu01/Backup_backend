@@ -146,6 +146,7 @@ class DonationCollaction {
       donation_date,
       donation_time,
       created_by: userId,
+      created_name: req.user.id,
     })
       .then(async (res) => {
         let final = [];
@@ -801,16 +802,16 @@ class DonationCollaction {
       {
         name: name,
         phoneNo: phoneNo,
-        address: address,
+        address: req.body.address,
         new_member: new_member,
         donation_date: donation_date,
         donation_time: donation_time,
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: 1,
+          // modeOfDonation: 1,
         },
       }
     ).then(async (res) => {
@@ -867,9 +868,9 @@ class DonationCollaction {
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: 2,
+          // modeOfDonation: 2,
         },
       }
     ).then(async (res) => {
@@ -924,9 +925,9 @@ class DonationCollaction {
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: 3,
+          // modeOfDonation: 3,
         },
       }
     ).then(async (res) => {
@@ -985,9 +986,9 @@ class DonationCollaction {
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: "4",
+          // modeOfDonation: "4",
         },
       }
     ).then(async (res) => {
@@ -1047,9 +1048,9 @@ class DonationCollaction {
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: 1,
+          // modeOfDonation: 1,
         },
       }
     ).then(async (res) => {
@@ -1106,9 +1107,9 @@ class DonationCollaction {
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: 2,
+          // modeOfDonation: 2,
         },
       }
     ).then(async (res) => {
@@ -1163,9 +1164,9 @@ class DonationCollaction {
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: 3,
+          // modeOfDonation: 3,
         },
       }
     ).then(async (res) => {
@@ -1224,9 +1225,9 @@ class DonationCollaction {
       },
       {
         where: {
-          created_by: userId,
+          // created_by: userId,
           id: id,
-          modeOfDonation: "4",
+          // modeOfDonation: "4",
         },
       }
     ).then(async (res) => {
@@ -1276,7 +1277,7 @@ class DonationCollaction {
         },
       ],
       where: whereClause,
-      order: [["donation_date", "DESC"]],
+      order: [["id", "DESC"]],
     });
 
     const promises = data.map(async (elecDonation) => {
@@ -1411,7 +1412,7 @@ class DonationCollaction {
 
   allDonationRecord = async (req) => {
     let record;
-    let { id ,order} = req.query;
+    let { id, order } = req.query;
     if (id) {
       record = await TblNewDonation.findAll({
         where: {
@@ -1438,8 +1439,7 @@ class DonationCollaction {
       });
 
       return record;
-    }
-    else if (order){
+    } else if (order) {
       record = await TblNewDonation.findAll({
         where: {
           RECEIPT_NO: order,
@@ -1540,7 +1540,7 @@ class DonationCollaction {
   addDonationType = async (req) => {
     const { type_en, type_hi, modeOfType, itemType_en, itemType_hi } = req.body;
     let data;
-    
+
     if (modeOfType == 1) {
       data = await TblDonationTypes.create({
         type_en,
@@ -1729,6 +1729,7 @@ class DonationCollaction {
           };
         });
     }
+
     if (status == "0") {
       await TblDonationTypes.update(
         {
@@ -1940,8 +1941,6 @@ class DonationCollaction {
     return result;
   };
 
-
- 
   getuserBynum = async (req) => {
     let user = await TblelecDonation.findOne({
       where: {
@@ -2659,7 +2658,7 @@ class DonationCollaction {
   };
 
   getManualDonation = async (req) => {
-    const { type,id } = req.query;
+    const { type, id } = req.query;
     let data;
     let whereClause = {};
     let result;
@@ -2667,7 +2666,7 @@ class DonationCollaction {
       whereClause.modeOfDonation = type;
     }
 
-    if (id){
+    if (id) {
       whereClause.id = id;
     }
 
@@ -2679,7 +2678,7 @@ class DonationCollaction {
         },
       ],
       where: whereClause,
-      order: [["donation_date", "DESC"]],
+      order: [["id", "DESC"]],
     });
 
     const promises = data?.map(async (manualdonation) => {
@@ -2934,6 +2933,7 @@ class DonationCollaction {
 
   dashAdminTotal = async () => {
     const today = new Date();
+
     const startOfToday = new Date(
       today.getFullYear(),
       today.getMonth(),
@@ -3453,73 +3453,32 @@ class DonationCollaction {
     };
   };
 
-  
+  checkmanualDonation = async (req, res) => {
+    const response = await db.ManualDonation.findOne({
+      where: {
+        id: req.body.id,
+      },
+    });
+    return response;
+  };
 
+  deletemanualDonation = async (req, res) => {
+    const response = await db.ManualDonation.destroy({
+      where: {
+        id: req.body.id,
+      },
+    });
+    return response;
+  };
 
-
-
-  dashemployeeTotalOnline = async (req) => {
-    //   const donationResultsPromise = TblNewDonation.findAll({
-    //     where: {
-    //       id: req.user.id,
-    //     },
-    //     attributes: [
-    //       "ADDED_BY",
-    //       "MODE_OF_DONATION",
-    //       [
-    //         TblNewDonation.sequelize.fn(
-    //           "SUM",
-    //           TblNewDonation.sequelize.col("tbl_donations.amount")
-    //         ),
-    //         "total_amount",
-    //       ],
-    //     ],
-    //     group: ["ADDED_BY", "MODE_OF_DONATION"],
-    //   });
-    //   const employeeResultsPromise = TblEmployees.findAll({
-    //     attributes: ["id", "Username"],
-    //   });
-    //   const [donationResults, employeeResults] = await Promise.all([
-    //     donationResultsPromise,
-    //     employeeResultsPromise,
-    //   ]);
-    //   const employeeMap = {};
-    //   employeeResults.forEach((employee) => {
-    //     employeeMap[employee.id] = employee.Username;
-    //   });
-    //   const modeOfDonationMap = {
-    //     ONLINE: "Online",
-    //     CHEQUE: "Cheque",
-    //   };
-    //   const donationResultsByUser = {};
-    //   donationResults.forEach((donation) => {
-    //     const employeeName = employeeMap[donation.ADDED_BY];
-    //     const modeOfDonation = modeOfDonationMap[donation.MODE_OF_DONATION];
-    //     const totalAmount = donation.dataValues.total_amount;
-    //     if (!donationResultsByUser[donation.ADDED_BY]) {
-    //       donationResultsByUser[donation.ADDED_BY] = {
-    //         created_by: donation.ADDED_BY,
-    //         employee_name: employeeName,
-    //         Online_amount: 0,
-    //         Cheque_amount: 0,
-    //         total: 0,
-    //       };
-    //     }
-    //     const userResult = donationResultsByUser[donation.ADDED_BY];
-    //     switch (modeOfDonation) {
-    //       case modeOfDonationMap.ONLINE:
-    //         userResult.Online_amount = totalAmount;
-    //         break;
-    //       case modeOfDonationMap.CHEQUE:
-    //         userResult.Cheque_amount = totalAmount;
-    //         break;
-    //     }
-    //     userResult.total = userResult.Online_amount + userResult.Cheque_amount;
-    //   });
-    //   const result = Object.values(donationResultsByUser);
-    //   return {
-    //     data: result,
-    //   };
+  deleteDonationType = async (req, res) => {
+    const response = await TblDonationTypes.destroy({
+      where: {
+        id: req.body.id,
+        modeOfType: req.body.type,
+      },
+    });
+    return response;
   };
 }
 

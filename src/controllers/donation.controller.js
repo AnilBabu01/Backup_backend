@@ -47,26 +47,26 @@ const addelecDonation = catchAsync(async (req, res) => {
   if (!data) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
   }
-  if(data.status == "true"){
+  if (data.status == "true") {
     res.status(httpStatus.CREATED).send({
       status: true,
       msg: "Electric Donation added successfully.",
       data: data,
-    })
-  }else if (data.status == "false"){
+      created_username: "anil",
+    });
+  } else if (data.status == "false") {
     res.status(httpStatus.UNAUTHORIZED).send({
       status: false,
       msg: "Voucher Exhausted request to admin ",
-     
-    })
-  }else{
+    });
+  } else {
     res.status(httpStatus.CREATED).send({
       status: true,
       msg: "Electric Donation added successfully.",
       data: data,
-    })
+      created_username: "anil",
+    });
   }
- 
 });
 
 const addmanualDonation = catchAsync(async (req, res) => {
@@ -79,6 +79,7 @@ const addmanualDonation = catchAsync(async (req, res) => {
     status: true,
     msg: "Manual Donation added successfully.",
     data: data,
+    created_username: req.user.id,
   });
 });
 
@@ -437,7 +438,7 @@ const donationReport = catchAsync(async (req, res) => {
   });
 });
 
-const onlineDonationReport  = catchAsync(async (req, res) => {
+const onlineDonationReport = catchAsync(async (req, res) => {
   const data = await donationService.onlineDonationReport(req);
   if (!data) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
@@ -591,7 +592,6 @@ const dashemployeeTotalManual = catchAsync(async (req, res) => {
   });
 });
 
-
 const dashAdminTotalOnline = catchAsync(async (req, res) => {
   const data = await donationService.dashAdminTotalOnline(req);
 
@@ -601,14 +601,26 @@ const dashAdminTotalOnline = catchAsync(async (req, res) => {
 });
 
 const dashemployeeTotalOnline = catchAsync(async (req, res) => {
-  const data = await donationService.dashemployeeTotalOnline(req);
-
-  res.status(200).send({
+  const data = await donationService.dashemployeeTotalOnline(req,res);
+  res.status(httpStatus.OK).send({
     data,
   });
 });
 
 
+const deletemanualDonation = catchAsync(async (req, res) => {
+
+
+  const data = await donationService.deletemanualDonation(req, res);
+  return data;
+});
+
+const deleteDonationType = catchAsync(async (req, res) => {
+
+
+  const data = await donationService.deleteDonationType(req, res);
+  return data;
+});
 
 
 
@@ -667,4 +679,6 @@ module.exports = {
   getAllocatedVoucherList,
   searchElectric,
   searchManual,
+  deletemanualDonation,
+  deleteDonationType
 };

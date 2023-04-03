@@ -9,10 +9,7 @@ const verifyCallback = (req, resolve, reject) => async (err, user, info) => {
     return reject(new ApiError(httpStatus.UNAUTHORIZED, "Please authenticate"));
   }
   let role = user.role_id 
-  
-
   if (user && role ==1 || role ===3) {
-  
     req.user = user;
     if ( role ==1){
       req.user.isAdmin = true

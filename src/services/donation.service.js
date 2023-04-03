@@ -101,11 +101,62 @@ const dashAdminTotalOnline = async (req)=>{
   return donation;
 }
 
-const dashemployeeTotalOnline = async (req)=>{
-  const donation = await DonationCollection.dashemployeeTotalOnline(req);
+const dashemployeeTotalOnline = async (req,res)=>{
+  const donation = await DonationCollection.dashemployeeTotalOnline(req,res);
 
   return donation;
 }
+
+const deletemanualDonation = async (req, res)=>{
+  try {
+    const checkid = await DonationCollection.checkmanualDonation(req, res);
+if(checkid){
+  const donation = await DonationCollection.deletemanualDonation(req, res);
+  return res.status(httpStatus.OK).send({
+    status:true,
+    data:donation,
+    message:"Donation deleted successfully"
+  });
+}
+else{
+  return res.status(httpStatus.BAD_REQUEST).send({
+    status:false,
+    data:{},
+    message:"invalid id! could not delete donation"
+  });
+}
+  } catch (error) {
+    return res.status(httpStatus.BAD_GATEWAY).send({
+      status:false,
+      data:error,
+      message:"Something went wrong!!"
+    });
+  }
+ 
+}
+
+
+
+const deleteDonationType = async (req, res)=>{
+  try {
+  const donation = await DonationCollection.deleteDonationType(req, res);
+  return res.status(httpStatus.OK).send({
+    status:true,
+    data:donation,
+    message:"Donation deleted successfully"
+  });
+  } catch (error) {
+    return res.status(httpStatus.BAD_GATEWAY).send({
+      status:false,
+      data:error,
+      message:"Something went wrong!!"
+    });
+  }
+ 
+}
+
+
+
 const SpecificsearchOnlinecheque = async (req) => {
   const donation = await DonationCollection.SpecificsearchOnlinecheque(req);
 
@@ -544,5 +595,7 @@ module.exports = {
   searchOnlineCheque,
   dashemployeeTotal,
   dashemployeeTotalManual,
-  dashemployeeTotalOnline
+  deletemanualDonation,
+  dashemployeeTotalOnline,
+  deleteDonationType
 };
