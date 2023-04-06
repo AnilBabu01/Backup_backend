@@ -84,8 +84,9 @@ const addmanualDonation = catchAsync(async (req, res) => {
 });
 
 const getElecDonation = catchAsync(async (req, res) => {
-  const data = await donationService.getElecDonation(req);
 
+  
+  const data = await donationService.getElecDonation(req);
   if (!data) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
   }
@@ -95,6 +96,7 @@ const getElecDonation = catchAsync(async (req, res) => {
     data: data,
   });
 });
+
 
 const searchDonation = catchAsync(async (req, res) => {
   const data = await donationService.searchDonation(req);

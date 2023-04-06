@@ -10,7 +10,10 @@ const sequelize = new Sequelize(config.oracle.database, config.oracle.user, conf
   pool: { max: 5, min: 0, idle: 10000 }
 })
 
-sequelize.authenticate().then(() => {
+sequelize.authenticate({
+  alter: true,
+  force: false,
+}).then(() => {
   logger.log('info', 'connected')
 }).catch((err) => {
   logger.error('error', err);

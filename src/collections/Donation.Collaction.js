@@ -1279,7 +1279,7 @@ class DonationCollaction {
         },
       ],
       where: whereClause,
-      order: [["donation_date", "DESC"]],
+      order: [["voucherNo", "DESC"]],
     });
 
     const promises = data.map(async (elecDonation) => {
@@ -1293,8 +1293,6 @@ class DonationCollaction {
             id: user,
           },
         });
-        console.log(admin.signature, "sign");
-        // Add signature to each elec donation item
         return {
           ...elecDonation?.toJSON(),
           createdBySignature: admin?.signature,

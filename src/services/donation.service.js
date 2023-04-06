@@ -190,7 +190,6 @@ if(check.data){
     let ElecDonation;
 
     let receipt = await VoucherCollection.getReceipt(req.body.modeOfDonation);
-    console.log(receipt,"increm");
     if (check?.data) {
       let vou = parseInt(check?.data).toLocaleString("en-US", {
         minimumIntegerDigits: 4,
@@ -209,7 +208,6 @@ if(check.data){
         minimumIntegerDigits: 4,
         useGrouping: false,
       });
-      console.log(fk,"final np")
       vou = fk;
     }
     console.log("heee")
