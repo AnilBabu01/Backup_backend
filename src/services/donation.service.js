@@ -2,7 +2,7 @@ const httpStatus = require("http-status");
 const { DonationCollection } = require("../collections");
 const AuthCollaction = require("../collections/Auth.Collaction");
 const VoucherCollection = require("../collections/Voucher.Collection");
-const { voucherController } = require("../controllers");
+const  voucherController  = require("../controllers/voucher.controller");
 const ApiError = require("../utils/ApiError");
 
 const generateReceiptNo = (lastID) => {
@@ -72,91 +72,40 @@ const searchOnlineCheque = async (req) => {
   return donation;
 };
 
-const dashAdminTotal = async (req)=>{
+const dashAdminTotal = async (req) => {
   const donation = await DonationCollection.dashAdminTotal(req);
 
   return donation;
-}
-const dashemployeeTotal = async (req)=>{
+};
+const dashemployeeTotal = async (req) => {
   const donation = await DonationCollection.dashemployeeTotal(req);
 
   return donation;
-}
+};
 
-const dashAdminTotalManual = async (req)=>{
+const dashAdminTotalManual = async (req) => {
   const donation = await DonationCollection.dashAdminTotalManual(req);
 
   return donation;
-}
+};
 
-const dashemployeeTotalManual = async (req)=>{
+const dashemployeeTotalManual = async (req) => {
   const donation = await DonationCollection.dashemployeeTotalManual(req);
 
   return donation;
-}
+};
 
-const dashAdminTotalOnline = async (req)=>{
+const dashAdminTotalOnline = async (req) => {
   const donation = await DonationCollection.dashAdminTotalOnline(req);
 
   return donation;
-}
+};
 
-const dashemployeeTotalOnline = async (req,res)=>{
-  const donation = await DonationCollection.dashemployeeTotalOnline(req,res);
+const dashemployeeTotalOnline = async (req) => {
+  const donation = await DonationCollection.dashemployeeTotalOnline(req);
 
   return donation;
-}
-
-const deletemanualDonation = async (req, res)=>{
-  try {
-    const checkid = await DonationCollection.checkmanualDonation(req, res);
-if(checkid){
-  const donation = await DonationCollection.deletemanualDonation(req, res);
-  return res.status(httpStatus.OK).send({
-    status:true,
-    data:donation,
-    message:"Donation deleted successfully"
-  });
-}
-else{
-  return res.status(httpStatus.BAD_REQUEST).send({
-    status:false,
-    data:{},
-    message:"invalid id! could not delete donation"
-  });
-}
-  } catch (error) {
-    return res.status(httpStatus.BAD_GATEWAY).send({
-      status:false,
-      data:error,
-      message:"Something went wrong!!"
-    });
-  }
- 
-}
-
-
-
-const deleteDonationType = async (req, res)=>{
-  try {
-  const donation = await DonationCollection.deleteDonationType(req, res);
-  return res.status(httpStatus.OK).send({
-    status:true,
-    data:donation,
-    message:"Donation deleted successfully"
-  });
-  } catch (error) {
-    return res.status(httpStatus.BAD_GATEWAY).send({
-      status:false,
-      data:error,
-      message:"Something went wrong!!"
-    });
-  }
- 
-}
-
-
-
+};
 const SpecificsearchOnlinecheque = async (req) => {
   const donation = await DonationCollection.SpecificsearchOnlinecheque(req);
 
@@ -174,7 +123,6 @@ const manualsearchDonation = async (req) => {
   return donation;
 };
 
-
 const addelecDonation = async (req) => {
   let voucherNo;
   let vno;
@@ -188,12 +136,14 @@ const addelecDonation = async (req) => {
     useGrouping: false,
   });
 
+  console.log(voucherNo,"inital voucher");
+
   let checkVoucherNumber = await DonationCollection.checkVoucherNumberExists(
     voucherNo
   );
 
   if (checkVoucherNumber) {
-    console.log(Number(voucherNo) + 1, "NUMBER VOUCHER");
+   
     let exist = Number(voucherNo) + 1;
     let fk = parseInt(exist).toLocaleString("en-US", {
       minimumIntegerDigits: 4,
@@ -222,7 +172,7 @@ const addelecDonation = async (req) => {
         minimumIntegerDigits: 4,
         useGrouping: false,
       });
-      
+
     check = await VoucherCollection.checkVoucher(req, fk);
   }else{
     check = await VoucherCollection.checkVoucher(req, voucherNo);
@@ -235,10 +185,10 @@ if(check.data){
     check.data = check.data + 1
   }
 }
- 
+
   if (check?.status !== false) {
     let ElecDonation;
-  
+
     let receipt = await VoucherCollection.getReceipt(req.body.modeOfDonation);
     console.log(receipt,"increm");
     if (check?.data) {
@@ -292,7 +242,6 @@ if(check.data){
     );
     return ElecDonation;
   }
-
 };
 
 const addmanualDonation = async (req) => {
@@ -387,19 +336,19 @@ const getAdminDonationType = async (req) => {
 };
 
 const addDonationType = async (req) => {
-  let isUnique = await DonationCollection.checkDonationType(req)
- console.log(isUnique)
-  if(isUnique.length > 0) {
-    throw new ApiError(httpStatus.CONFLICT,"Donation Type is already Exists")
+  let isUnique = await DonationCollection.checkDonationType(req);
+  console.log(isUnique);
+  if (isUnique.length > 0) {
+    throw new ApiError(httpStatus.CONFLICT, "Donation Type is already Exists");
   }
   const donationType = await DonationCollection.addDonationType(req);
   return donationType;
 };
 
-const getAllocatedVoucherList = async (req)=>{
+const getAllocatedVoucherList = async (req) => {
   const donationType = await DonationCollection.getAllocatedVoucherList(req);
   return donationType;
-}
+};
 
 const DelDonationType = async (req) => {
   const donationType = await DonationCollection.delDonationType(req);
@@ -451,7 +400,7 @@ const getuserBynum = async (req) => {
   return user;
 };
 
-const getuserBynumManual  = async (req) => {
+const getuserBynumManual = async (req) => {
   const user = await DonationCollection.getuserBynumManual(req);
 
   return user;
@@ -481,8 +430,6 @@ const searchAllDonation = async (req) => {
   return report;
 };
 
-
-
 const userDonationAmount = async (req) => {
   const report = await DonationCollection.userDonationAmount(req);
 
@@ -494,7 +441,6 @@ const searchmanualAllDonation = async (req) => {
 
   return report;
 };
-
 
 const manualuserDonationAmount = async (req) => {
   const report = await DonationCollection.manualuserDonationAmount(req);
@@ -514,15 +460,11 @@ const centralizeduserDonationAmount = async (req) => {
   return report;
 };
 
-const employeeChangePass  = async (req) => {
-
-
-
+const employeeChangePass = async (req) => {
   const report = await DonationCollection.employeeChangePass(req);
 
   return report;
 };
-
 
 const getManualDonation = async (req) => {
   const report = await DonationCollection.getManualDonation(req);
@@ -595,7 +537,5 @@ module.exports = {
   searchOnlineCheque,
   dashemployeeTotal,
   dashemployeeTotalManual,
-  deletemanualDonation,
   dashemployeeTotalOnline,
-  deleteDonationType
 };

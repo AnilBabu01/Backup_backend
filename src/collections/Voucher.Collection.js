@@ -1,6 +1,7 @@
 const { request } = require("express");
 const httpStatus = require("http-status");
 const { Op } = require("sequelize");
+const { DonationCollection } = require(".");
 const sequelize = require("../db/db-connection");
 const db = require("../models");
 const ApiError = require("../utils/ApiError");
@@ -36,13 +37,13 @@ class voucherCollection {
 
     console.log(checkVoucher, "voucher");
 
-    if (checkVoucher.length === 0) {
+    if (checkVoucher?.length === 0) {
       let username = await TblEmployee.findOne({
         where: {
           id: user,
         },
       });
-      let usrs = username.toJSON().Username;
+      let usrs = username?.toJSON().Username;
       const voucher = await TblVoucher.create({
         vPrefix: vPrefix,
         from: Number(from),
@@ -103,6 +104,8 @@ class voucherCollection {
         status: true,
       },
     });
+
+
     console.log(AssignedVoucher, "Asssinged vouchefrs");
     let allVoucher = await TblVoucher.findOne({
       //geting the assigned voucherrss
@@ -112,22 +115,19 @@ class voucherCollection {
       },
     });
 
-    console.log(AssignedVoucher, "voucher");
-    if (AssignedVoucher === null && allVoucher) {
-      console.log(
-        Number(voucher),
-        "first eneter",
-        Number(allVoucher.from),
-        Number(allVoucher.to)
-      );
-      if (
-        Number(allVoucher.from) >= Number(voucher) &&
-        Number(voucher) <= Number(allVoucher.to)
-      ) {
+  
+  
+    if (AssignedVoucher === null && allVoucher !== null && allVoucher !== undefined) {
+ 
+      if (Number(allVoucher.from) >= Number(voucher) && Number(voucher) <= Number(allVoucher.to)) {
+        console.log(
+          "sec eneter",
+         
+        );
         if (allVoucher.voucher === 0) {
           data = {
             status: true,
-            message: "User Has been assigned ",
+            message: "User Has been assigned",
             data: allVoucher.from,
           };
           console.log(allVoucher.from, "Voucher Assigned");
@@ -148,12 +148,65 @@ class voucherCollection {
             } else {
               data = {
                 status: true,
-                message: "User Has been assigned ",
+                message: "User Has been assigned",
                 data: allVoucher.voucher,
               };
             }
           }
         }
+      }
+      else{
+       
+        let voucherNo = allVoucher.from;
+        let fk;
+        
+        while (await DonationCollection.checkVoucherNumberExists(voucherNo)) {
+          if (voucherNo >= allVoucher.to) {
+            data = {
+              status: false,
+              message: "No Vouchers Assigned Request to Admin  ",
+            };
+          }
+          
+          voucherNo++;
+          fk = voucherNo.toLocaleString("en-US", {
+            minimumIntegerDigits: 4,
+            useGrouping: false,
+          });
+          
+          voucherNo = fk;
+    
+        }
+       console.log(voucherNo,"fkfkf")
+        let AssignedVoucher = await TblVoucher.findOne({
+          //geting the assigned voucherrss
+          where: {
+            from: {
+              [Op.lte]: Number(voucherNo),
+            },
+            to: {
+              [Op.gte]: Number(voucherNo),
+            },
+            assign: userId,
+            status: true,
+          },
+        });
+
+     if(AssignedVoucher){
+
+        data ={
+          status: true,
+          message: "User Has been assigned",
+          data: voucherNo
+        }
+      }else{
+        data ={
+          status: false,
+          message: "Probably voucher exhausted request to admin",
+   
+        }
+      }
+    
       }
     } else {
       data = {
