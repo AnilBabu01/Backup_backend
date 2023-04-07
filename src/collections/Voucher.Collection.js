@@ -13,76 +13,158 @@ const TblElec = db.ElecDonationModel;
 const TblDonation = db.newDonationModel;
 
 class voucherCollection {
-  generateVoucher = async (req) => {
+//   generateVoucher = async (req) => {
+//     const { vPrefix, from, to, user } = req.body;
+// console.log(req.user);
+//     let data;
+//     console.log("bocy----------->",req.body)
+//     let x = await TblVoucher.destroy({
+//       where: {
+//         assign: user,
+//       },
+//     });
+// console.log("vuocee----------->",x);
+//     const checkVoucher = await TblVoucher.findAll({
+//       where: {
+//         from: {
+//           [Op.lte]: Number(from),
+//         },
+//         to: {
+//           [Op.gte]: Number(to),
+//         },
+//       },
+//     });
+
+//     console.log(checkVoucher, "voucher");
+
+//     if (checkVoucher?.length === 0) {
+//       let username = await TblEmployee.findOne({
+//         where: {
+//           id: user,
+//         },
+//       });
+//       let usrs = username?.toJSON().Username;
+//       const voucher = await TblVoucher.create({
+//         vPrefix: vPrefix,
+//         from: Number(from),
+//         to: Number(to),
+//         assign: user,
+//         name: usrs,
+//       })
+//         .then((res) => {
+//           return {
+//             message: res,
+//           };
+//         })
+//         .catch((err) => {
+//           return {
+//             message: err,
+//           };
+//         });
+
+//       await TblEmployee.update(
+//         {
+//           isRequest: false,
+//         },
+//         {
+//           where: {
+//             id: user,
+//           },
+//         }
+//       );
+//       console.log(voucher);
+//       return (data = {
+//         status: true,
+//         message: "Voucher Created Successfully",
+//       });
+//     }
+//     return (data = {
+//       status: false,
+//       message: "This Vouchers is already Assigned to another user",
+//     });
+//   };
+
+  generateVouchers = async (req) => {
     const { vPrefix, from, to, user } = req.body;
-
+  
     let data;
-
-    await TblVoucher.destroy({
+  
+    // Check if user already has any conflicting vouchers assigned
+    const assignedVouchers = await TblVoucher.findAll({
       where: {
         assign: user,
-      },
+        from: { [Op.lte]: to },
+        to: { [Op.gte]: from }
+      }
     });
-
-    const checkVoucher = await TblVoucher.findAll({
+  
+    if (assignedVouchers.length > 0) {
+      return {
+        status: false,
+        message: "This user already has conflicting vouchers assigned to them"
+      };
+    }
+  
+    // Check if new voucher range is overlapping with any existing vouchers
+    const overlappingVouchers = await TblVoucher.findAll({
       where: {
-        from: {
-          [Op.lte]: Number(from),
-        },
-        to: {
-          [Op.gte]: Number(to),
-        },
+        from: { [Op.lte]: to },
+        to: { [Op.gte]: from }
+      }
+    });
+  
+    if (overlappingVouchers.length > 0) {
+      return {
+        status: false,
+        message: "This voucher range is overlapping with existing vouchers"
+      };
+    }
+  
+    // Create new voucher entry in TblVoucher
+    let username = await TblEmployee.findOne({
+      where: {
+        id: user,
       },
     });
-
-    console.log(checkVoucher, "voucher");
-
-    if (checkVoucher?.length === 0) {
-      let username = await TblEmployee.findOne({
+    let usrs = username?.toJSON().Username;
+  
+    const voucher = await TblVoucher.create({
+      vPrefix: vPrefix,
+      from: Number(from),
+      to: Number(to),
+      assign: user,
+      name: usrs,
+    })
+    .then((res) => {
+      return {
+        message: res,
+      };
+    })
+    .catch((err) => {
+      return {
+        message: err,
+      };
+    });
+  
+    // Update TblEmployee to set isRequest as false for the user
+    await TblEmployee.update(
+      {
+        isRequest: false,
+      },
+      {
         where: {
           id: user,
         },
-      });
-      let usrs = username?.toJSON().Username;
-      const voucher = await TblVoucher.create({
-        vPrefix: vPrefix,
-        from: Number(from),
-        to: Number(to),
-        assign: user,
-        name: usrs,
-      })
-        .then((res) => {
-          return {
-            message: res,
-          };
-        })
-        .catch((err) => {
-          return {
-            message: err,
-          };
-        });
-
-      await TblEmployee.update(
-        {
-          isRequest: false,
-        },
-        {
-          where: {
-            id: user,
-          },
-        }
-      );
-      console.log(voucher);
-      return (data = {
-        status: true,
-        message: "Voucher Created Successfully",
-      });
-    }
+      }
+    );
+    console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
     return (data = {
-      status: false,
-      message: "This Vouchers is already Assigned to another user",
+      status: true,
+      message: "Voucher Created Successfully",
+      voucher: voucher
     });
   };
+  
 
   checkVoucher = async (req, voucher) => {
     const userId = req.user.id;

@@ -7,7 +7,7 @@ const ApiError = require("../utils/ApiError");
 const catchAsync = require("../utils/catchAsync");
 
 const GenerateVoucher = catchAsync(async (req, res) => {
-  const data = await VoucherCollection.generateVoucher(req);
+  const data = await VoucherCollection.generateVouchers(req);
   if (!data) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
   }
