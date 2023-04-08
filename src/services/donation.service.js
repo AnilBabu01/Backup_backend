@@ -297,8 +297,12 @@ const editmanualItemDonation = async (req) => {
 };
 
 const getElecDonationbyID = async (req) => {
+  try{
   const data = await DonationCollection.getElecDonationbyId(req);
   return data;
+  }catch(error){
+    throw error
+  }
 };
 
 const cashDonation = async (req) => {

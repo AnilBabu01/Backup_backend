@@ -1327,6 +1327,7 @@ class DonationCollaction {
   };
 
   getElecDonationbyId = async (req) => {
+    try{
     let id = req.query.id;
     const userID = req.user.id;
     let data = await TblelecDonation.findOne({
@@ -1335,11 +1336,21 @@ class DonationCollaction {
         {
           model: TblelecDonationItem,
           as: "elecItemDetails",
-        },
+        }
       ],
     });
-    console.log(data);
+    let creator = await TblEmployees.findOne({
+      where: { id: data.created_by },
+      attributes: ["id", "Username"],
+    });
+  
+    // Add the creator's name to the result object
+
+    data.dataValues.creator_name = creator;
     return data;
+  }catch(error){
+    throw error
+  }
   };
 
   getLastID = async () => {
@@ -3446,6 +3457,25 @@ class DonationCollaction {
       data: result,
     };
   };
+
+  getElectricDonationWithCreator = async(id) =>{
+    try {
+      const result = await TblelecDonation.findOne({
+        where: { id },
+        include: [
+          {
+            model: TblEmployees,
+            as: "creator_name",
+            attributes: ["id", "Username"],
+          },
+        ],
+      });
+      console.log("result ----------------->",result)
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   dashemployeeTotalOnline = async (req) => {
     //   const donationResultsPromise = TblNewDonation.findAll({

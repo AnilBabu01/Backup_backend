@@ -184,7 +184,9 @@ router
 router
   .route("/search-online-cheque")
   .get(adminAuth(), donationController.SpecificsearchOnlinecheque);
-
+router
+  .route("/get-elecDonation")
+  .get(adminAuth(), donationController.getElecDonationbyID);
 
 
   

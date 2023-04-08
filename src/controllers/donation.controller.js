@@ -264,6 +264,7 @@ const editmanualItemDonation = catchAsync(async (req, res) => {
 });
 
 const getElecDonationbyID = catchAsync(async (req, res) => {
+  try{
   const data = await donationService.getElecDonationbyID(req);
 
   if (!data) {
@@ -274,6 +275,13 @@ const getElecDonationbyID = catchAsync(async (req, res) => {
     msg: "Success",
     data: data,
   });
+}catch(err){
+  res.status(httpStatus.CREATED).send({
+    status: false,
+    msg: "Not Present",
+    data: [],
+  });
+}
 });
 
 const savePaymentDetails = catchAsync(async (req, res) => {
