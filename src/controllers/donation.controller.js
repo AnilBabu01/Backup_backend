@@ -622,7 +622,9 @@ const deletemanualDonation = catchAsync(async (req, res) => {
 
 
   const data = await donationService.deletemanualDonation(req, res);
-  return data;
+  res.status(httpStatus.OK).send({
+    data,
+  });
 });
 
 const deleteDonationType = catchAsync(async (req, res) => {
