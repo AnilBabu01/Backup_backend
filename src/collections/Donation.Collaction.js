@@ -1226,7 +1226,15 @@ userId==1? whereClause =  {
     } = req.body;
 
     const userId = req.user.id;
-
+    let whereClause = {}
+    userId==1? whereClause =  {
+      id: id,
+      // modeOfDonation: "4",
+    }:whereClause= {
+      created_by: userId,
+      id: id,
+      modeOfDonation: "4",
+    };
     await TblmanualDonation.update(
       {
         name: name,
@@ -1237,11 +1245,7 @@ userId==1? whereClause =  {
         donation_time: donation_time,
       },
       {
-        where: {
-          created_by: userId,
-          id: id,
-          modeOfDonation: "4",
-        },
+        where: whereClause,
       }
     ).then(async (res) => {
       donation_item.forEach(async (e) => {
