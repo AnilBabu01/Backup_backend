@@ -3494,6 +3494,35 @@ userId==1? whereClause =  {
     }
   }
 
+  deletemanualDonation = async (req) => {
+    let id = req.body.id;
+    console.log(id);
+
+    let deleteReq = await TblmanualDonation.destroy({
+      where: {
+        id: id,
+      },
+    })
+      .then(async (res) => {
+        await TblmanualDonationItem.destroy({
+          where: {
+            donationId: id,
+          },
+        });
+        return {
+          status: 1,
+          message: "deleted successfully",
+        };
+      })
+      .catch((err) => {
+        return {
+          status: 1,
+          message: "Something went wrong",
+        };
+      });
+    return deleteReq;
+  };
+
   dashemployeeTotalOnline = async (req) => {
     //   const donationResultsPromise = TblNewDonation.findAll({
     //     where: {

@@ -480,6 +480,12 @@ const cancelEachVoucher = async (req) => {
   return report;
 };
 
+const deletemanualDonation = async (req) => {
+  const report = await DonationCollection.deletemanualDonation(req);
+
+  return report;
+};
+
 module.exports = {
   cancelEachVoucher,
   cashDonation,
@@ -540,4 +546,5 @@ module.exports = {
   dashemployeeTotal,
   dashemployeeTotalManual,
   dashemployeeTotalOnline,
+  deletemanualDonation
 };
