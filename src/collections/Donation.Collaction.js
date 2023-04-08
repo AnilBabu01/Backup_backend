@@ -3523,6 +3523,43 @@ userId==1? whereClause =  {
     return deleteReq;
   };
 
+  deleteDonationType = async (req) => {
+    let id = req.body.id;
+    const userId = req.user.id
+    // let whereClause = {}
+    // userId==1? whereClause =  {
+    //   id: id,
+    //   // modeOfDonation: "4",
+    // }:whereClause= {
+    //   created_by: userId,
+    //   id: id,
+    //   modeOfDonation: "4",
+    // };
+    let deleteReq = await TblDonationTypes.destroy({
+      where: {
+        id: id,
+      },
+    })
+      .then(async (res) => {
+        // await TblmanualDonationItem.destroy({
+        //   where: {
+        //     donationId: id,
+        //   },
+        // });
+        return {
+          status: 1,
+          message: "deleted successfully",
+        };
+      })
+      .catch((err) => {
+        return {
+          status: 1,
+          message: "Something went wrong",
+        };
+      });
+    return deleteReq;
+  };
+
   dashemployeeTotalOnline = async (req) => {
     //   const donationResultsPromise = TblNewDonation.findAll({
     //     where: {

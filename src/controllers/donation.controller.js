@@ -631,7 +631,9 @@ const deleteDonationType = catchAsync(async (req, res) => {
 
 
   const data = await donationService.deleteDonationType(req, res);
-  return data;
+  res.status(httpStatus.OK).send({
+    data,
+  });
 });
 
 
