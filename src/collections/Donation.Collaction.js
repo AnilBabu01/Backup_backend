@@ -797,7 +797,15 @@ class DonationCollaction {
     } = req.body;
 
     const userId = req.user.id;
-
+    let whereClause = {}
+    userId==1? whereClause =  {
+      id: id,
+      // modeOfDonation: "4",
+    }:whereClause= {
+      created_by: userId,
+      id: id,
+      modeOfDonation: "4",
+    };
     await TblelecDonation.update(
       {
         name: name,
@@ -808,11 +816,7 @@ class DonationCollaction {
         donation_time: donation_time,
       },
       {
-        where: {
-          created_by: userId,
-          id: id,
-          modeOfDonation: 1,
-        },
+        where: whereClause,
       }
     ).then(async (res) => {
       donation_item.forEach(async (e) => {
@@ -975,14 +979,13 @@ class DonationCollaction {
 
     const userId = req.user.id;
     let whereClause = {}
-console.log("ids------------>",id,userId)
 userId==1? whereClause =  {
   id: id,
   // modeOfDonation: "4",
 }:whereClause= {
   created_by: userId,
   id: id,
-  modeOfDonation: "4",
+   modeOfDonation: "4",
 };
     await TblelecDonation.update(
       {
