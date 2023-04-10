@@ -7,7 +7,7 @@ const sendOtp = async (mobile,otp) => {
       "port": null,
       "path": "/api/v5/flow/",
       "headers": {
-        "authkey": "293235AXhyyGJC63be5b10P1",
+        "authkey": "293235Ak5u9izJS564319a6aP1",
         "content-type": "application/json"
       }
     };

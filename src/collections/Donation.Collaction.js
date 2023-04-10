@@ -794,7 +794,15 @@ class DonationCollaction {
     } = req.body;
 
     const userId = req.user.id;
-
+    let whereClause = {}
+    userId==1? whereClause =  {
+      id: id,
+      // modeOfDonation: "4",
+    }:whereClause= {
+      created_by: userId,
+      id: id,
+      modeOfDonation: "4",
+    };
     await TblelecDonation.update(
       {
         name: name,
@@ -805,11 +813,7 @@ class DonationCollaction {
         donation_time: donation_time,
       },
       {
-        where: {
-          created_by: userId,
-          id: id,
-          modeOfDonation: 1,
-        },
+        where: whereClause,
       }
     ).then(async (res) => {
       donation_item.forEach(async (e) => {
@@ -853,6 +857,15 @@ class DonationCollaction {
     } = req.body;
 
     const userId = req.user.id;
+    let whereClause = {}
+    userId==1? whereClause =  {
+      id: id,
+      // modeOfDonation: "4",
+    }:whereClause= {
+      created_by: userId,
+      id: id,
+      modeOfDonation: "4",
+    };
 
     await TblelecDonation.update(
       {
@@ -864,11 +877,7 @@ class DonationCollaction {
         donation_time: donation_time,
       },
       {
-        where: {
-          created_by: userId,
-          id: id,
-          modeOfDonation: 2,
-        },
+        where: whereClause,
       }
     ).then(async (res) => {
       donation_item.forEach(async (e) => {
@@ -971,7 +980,15 @@ class DonationCollaction {
     } = req.body;
 
     const userId = req.user.id;
-
+    let whereClause = {}
+userId==1? whereClause =  {
+  id: id,
+  // modeOfDonation: "4",
+}:whereClause= {
+  created_by: userId,
+  id: id,
+   modeOfDonation: "4",
+};
     await TblelecDonation.update(
       {
         name: name,
@@ -982,11 +999,7 @@ class DonationCollaction {
         donation_time: donation_time,
       },
       {
-        where: {
-          created_by: userId,
-          id: id,
-          modeOfDonation: "4",
-        },
+        where: whereClause,
       }
     ).then(async (res) => {
       donation_item.forEach(async (e) => {
@@ -1210,7 +1223,15 @@ class DonationCollaction {
     } = req.body;
 
     const userId = req.user.id;
-
+    let whereClause = {}
+    userId==1? whereClause =  {
+      id: id,
+      // modeOfDonation: "4",
+    }:whereClause= {
+      created_by: userId,
+      id: id,
+      modeOfDonation: "4",
+    };
     await TblmanualDonation.update(
       {
         name: name,
@@ -1221,11 +1242,7 @@ class DonationCollaction {
         donation_time: donation_time,
       },
       {
-        where: {
-          created_by: userId,
-          id: id,
-          modeOfDonation: "4",
-        },
+        where: whereClause,
       }
     ).then(async (res) => {
       donation_item.forEach(async (e) => {
@@ -1324,6 +1341,7 @@ class DonationCollaction {
   };
 
   getElecDonationbyId = async (req) => {
+    try{
     let id = req.query.id;
     const userID = req.user.id;
     let data = await TblelecDonation.findOne({
@@ -1332,11 +1350,21 @@ class DonationCollaction {
         {
           model: TblelecDonationItem,
           as: "elecItemDetails",
-        },
+        }
       ],
     });
-    console.log(data);
+    let creator = await TblEmployees.findOne({
+      where: { id: data.created_by },
+      attributes: ["id", "Username"],
+    });
+  
+    // Add the creator's name to the result object
+
+    data.dataValues.creator_name = creator;
     return data;
+  }catch(error){
+    throw error
+  }
   };
 
   getLastID = async () => {
@@ -2472,6 +2500,9 @@ class DonationCollaction {
       whereClause.DATE_OF_DAAN = { [Op.between]: [from, to] };
       whereClause1.donation_date = { [Op.between]: [from, to] };
     }
+    // console.log("whereClause------------------->",whereClause)
+    // console.log("whereClause1------------------->",whereClause1)
+    // console.log("whereClauseinc------------------->",whereClauseinc)
 
     const tbl_donations_result = await TblNewDonation.findAll({
       attributes: [
@@ -2504,6 +2535,7 @@ class DonationCollaction {
       where: whereClause1,
       group: ["modeOfDonation", "type"],
     });
+    // return tbl_elec_donations_result
     const tbl_manual_donations_result = await TblmanualDonation.findAll({
       attributes: [
         "modeOfDonation",
@@ -2525,7 +2557,6 @@ class DonationCollaction {
       where: whereClause1,
       group: ["modeOfDonation", "type"],
     });
-
     // Fetch employee information for electronic donations
     const elecDonationEmployees = await Promise.all(
       tbl_elec_donations_result.map(async (item) => {
@@ -2559,8 +2590,6 @@ class DonationCollaction {
         }
       })
     );
-
-    // Fetch employee information for manual donations
     const manualDonationEmployees = await Promise.all(
       tbl_manual_donations_result.map(async (item) => {
         if (item) {
@@ -2592,11 +2621,10 @@ class DonationCollaction {
         }
       })
     );
-
+let count =0;
     const result = tbl_donations_result
       .map((item) => {
         const modeOfDonation = item?.MODE_OF_DONATION;
-        console.log(modeOfDonation);
         let totalAmountKey = "TOTAL_AMOUNT";
 
         if (modeOfDonation === "ONLINE") {
@@ -2616,7 +2644,112 @@ class DonationCollaction {
       })
       .concat(elecDonationEmployees, manualDonationEmployees);
 
-    return result;
+      let resultData = result.reduce((acc, item) => {
+        const { type, donationType, employeeName } = item;
+      let key = `${type}_${donationType}`
+      if(user){
+       key = `${type}_${donationType}_${employeeName}`;
+      }
+        if (!acc[key]) {
+          if(donationType=='manual'){
+          acc[key] = {
+            type,
+            donationType,
+            employeeName,
+            manual_bank_TOTAL_AMOUNT: 0,
+            manual_cash_TOTAL_AMOUNT: 0,
+            manual_cheque_TOTAL_AMOUNT: 0,
+            manual_item_TOTAL_AMOUNT: 0
+            // add more properties as needed
+          };}
+          if(donationType=='electric'){
+          acc[key] = {
+            type,
+            donationType,
+            employeeName,
+            electric_bank_TOTAL_AMOUNT: 0,
+            electric_cash_TOTAL_AMOUNT: 0,
+            electric_cheque_TOTAL_AMOUNT: 0,
+            electric_item_TOTAL_AMOUNT: 0
+            // add more properties as needed
+          };
+        }
+        }
+        if(acc[key]){
+        if (item.hasOwnProperty('electric_bank_TOTAL_AMOUNT')) {
+          acc[key].electric_bank_TOTAL_AMOUNT += item.electric_bank_TOTAL_AMOUNT;
+        }
+
+        if (item.hasOwnProperty('electric_cash_TOTAL_AMOUNT')) {
+          acc[key].electric_cash_TOTAL_AMOUNT += item.electric_cash_TOTAL_AMOUNT;
+        }
+
+        if (item.hasOwnProperty('electric_cheque_TOTAL_AMOUNT')) {
+          acc[key].electric_cheque_TOTAL_AMOUNT += item.electric_cheque_TOTAL_AMOUNT;
+        }
+
+        if (item.hasOwnProperty('electric_item_TOTAL_AMOUNT')) {
+          acc[key].electric_item_TOTAL_AMOUNT += item.electric_item_TOTAL_AMOUNT;
+        }
+        
+        if (item.hasOwnProperty('manual_bank_TOTAL_AMOUNT')) {
+          acc[key].manual_bank_TOTAL_AMOUNT += item.manual_bank_TOTAL_AMOUNT;
+        }
+
+        if (item.hasOwnProperty('manual_cash_TOTAL_AMOUNT')) {
+          acc[key].manual_cash_TOTAL_AMOUNT += item.manual_cash_TOTAL_AMOUNT;
+        }
+
+        if (item.hasOwnProperty('manual_cheque_TOTAL_AMOUNT')) {
+          acc[key].manual_cheque_TOTAL_AMOUNT += item.manual_cheque_TOTAL_AMOUNT;
+        }
+
+        if (item.hasOwnProperty('manual_item_TOTAL_AMOUNT')) {
+          acc[key].manual_item_TOTAL_AMOUNT += item.manual_item_TOTAL_AMOUNT;
+        }
+        }else{count++
+          console.log("item ---------> ",item)}
+
+        // add more conditionals for other types of amount
+        return acc;
+      }, {});
+      
+      console.log("count---->", count);
+      
+      resultData = Object.values(resultData)
+      let finalData = [];
+      resultData.forEach(item=>{
+        if(item.donationType=='manual'){
+          if (item.hasOwnProperty('manual_bank_TOTAL_AMOUNT') && item.manual_bank_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('manual_cash_TOTAL_AMOUNT')&& item.manual_cash_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('manual_cheque_TOTAL_AMOUNT')&& item.manual_cheque_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('manual_item_TOTAL_AMOUNT')&& item.manual_item_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+        }
+
+        if(item.donationType=='electric'){
+          if (item.hasOwnProperty('electric_bank_TOTAL_AMOUNT') && item.electric_bank_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('electric_cash_TOTAL_AMOUNT')&& item.electric_cash_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('electric_cheque_TOTAL_AMOUNT')&& item.electric_cheque_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('electric_item_TOTAL_AMOUNT')&& item.electric_item_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+        }
+      })
+    return finalData;
   };
 
   employeeChangePass = async (req) => {
@@ -3454,6 +3587,91 @@ class DonationCollaction {
     return {
       data: result,
     };
+  };
+
+  getElectricDonationWithCreator = async(id) =>{
+    try {
+      const result = await TblelecDonation.findOne({
+        where: { id },
+        include: [
+          {
+            model: TblEmployees,
+            as: "creator_name",
+            attributes: ["id", "Username"],
+          },
+        ],
+      });
+      console.log("result ----------------->",result)
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  deletemanualDonation = async (req) => {
+    let id = req.body.id;
+    console.log(id);
+
+    let deleteReq = await TblmanualDonation.destroy({
+      where: {
+        id: id,
+      },
+    })
+      .then(async (res) => {
+        await TblmanualDonationItem.destroy({
+          where: {
+            donationId: id,
+          },
+        });
+        return {
+          status: 1,
+          message: "deleted successfully",
+        };
+      })
+      .catch((err) => {
+        return {
+          status: 1,
+          message: "Something went wrong",
+        };
+      });
+    return deleteReq;
+  };
+
+  deleteDonationType = async (req) => {
+    let id = req.body.id;
+    const userId = req.user.id
+    // let whereClause = {}
+    // userId==1? whereClause =  {
+    //   id: id,
+    //   // modeOfDonation: "4",
+    // }:whereClause= {
+    //   created_by: userId,
+    //   id: id,
+    //   modeOfDonation: "4",
+    // };
+    let deleteReq = await TblDonationTypes.destroy({
+      where: {
+        id: id,
+      },
+    })
+      .then(async (res) => {
+        // await TblmanualDonationItem.destroy({
+        //   where: {
+        //     donationId: id,
+        //   },
+        // });
+        return {
+          status: 1,
+          message: "deleted successfully",
+        };
+      })
+      .catch((err) => {
+        return {
+          status: 1,
+          message: "Something went wrong",
+        };
+      });
+    return deleteReq;
   };
 
   dashemployeeTotalOnline = async (req) => {

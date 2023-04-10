@@ -297,8 +297,12 @@ const editmanualItemDonation = async (req) => {
 };
 
 const getElecDonationbyID = async (req) => {
+  try{
   const data = await DonationCollection.getElecDonationbyId(req);
   return data;
+  }catch(error){
+    throw error
+  }
 };
 
 const cashDonation = async (req) => {
@@ -476,6 +480,18 @@ const cancelEachVoucher = async (req) => {
   return report;
 };
 
+const deletemanualDonation = async (req) => {
+  const report = await DonationCollection.deletemanualDonation(req);
+
+  return report;
+};
+
+const deleteDonationType = async (req) => {
+  const report = await DonationCollection.deleteDonationType(req);
+
+  return report;
+};
+
 module.exports = {
   cancelEachVoucher,
   cashDonation,
@@ -536,4 +552,6 @@ module.exports = {
   dashemployeeTotal,
   dashemployeeTotalManual,
   dashemployeeTotalOnline,
+  deletemanualDonation,
+  deleteDonationType
 };
