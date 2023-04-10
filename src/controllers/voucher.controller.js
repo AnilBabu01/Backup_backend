@@ -17,6 +17,16 @@ const GenerateVoucher = catchAsync(async (req, res) => {
   });
 });
 
+const getVoucherr  = async(req,res)=>{
+  let voucher =  await VoucherCollection.getVoucherr(req,1)
+  res.send(voucher)
+}
+
+const updateVoucher = async(req,res)=>{
+  let voucher =  await VoucherCollection.updateVoucher(req,1)
+  res.send(voucher)
+
+}
 const getVoucherEach = catchAsync(async (req, res) => {
   const lastID = await DonationCollection.getElecLastID();
   let voucherNo = lastID + 1;
@@ -380,6 +390,7 @@ module.exports = {
   deleteVoucher,
   checkVoucher,
   getVoucher,
+  getVoucherr,
   requestVoucher,
   getrequestVoucher,
   EmployeeRole,
@@ -389,6 +400,10 @@ module.exports = {
   getReceipt,
   changeReceiptStatus,
   getVoucherEach,
+<<<<<<< Updated upstream
   NewgetVoucherEach,
   checknewvoucher
+=======
+  updateVoucher
+>>>>>>> Stashed changes
 };

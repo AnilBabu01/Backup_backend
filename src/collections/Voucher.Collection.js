@@ -11,115 +11,127 @@ const TblEmpRoles = db.empRoles;
 const TblReceipt = db.Receipt;
 const TblElec = db.ElecDonationModel;
 const TblDonation = db.newDonationModel;
+const constants = require("./../utils/constants");
 
 class voucherCollection {
-//   generateVoucher = async (req) => {
-//     const { vPrefix, from, to, user } = req.body;
-// console.log(req.user);
-//     let data;
-//     console.log("bocy----------->",req.body)
-//     let x = await TblVoucher.destroy({
-//       where: {
-//         assign: user,
-//       },
-//     });
-// console.log("vuocee----------->",x);
-//     const checkVoucher = await TblVoucher.findAll({
-//       where: {
-//         from: {
-//           [Op.lte]: Number(from),
-//         },
-//         to: {
-//           [Op.gte]: Number(to),
-//         },
-//       },
-//     });
+  //   generateVoucher = async (req) => {
+  //     const { vPrefix, from, to, user } = req.body;
+  // console.log(req.user);
+  //     let data;
+  //     console.log("bocy----------->",req.body)
+  //     let x = await TblVoucher.destroy({
+  //       where: {
+  //         assign: user,
+  //       },
+  //     });
+  // console.log("vuocee----------->",x);
+  //     const checkVoucher = await TblVoucher.findAll({
+  //       where: {
+  //         from: {
+  //           [Op.lte]: Number(from),
+  //         },
+  //         to: {
+  //           [Op.gte]: Number(to),
+  //         },
+  //       },
+  //     });
 
-//     console.log(checkVoucher, "voucher");
+  //     console.log(checkVoucher, "voucher");
 
-//     if (checkVoucher?.length === 0) {
-//       let username = await TblEmployee.findOne({
-//         where: {
-//           id: user,
-//         },
-//       });
-//       let usrs = username?.toJSON().Username;
-//       const voucher = await TblVoucher.create({
-//         vPrefix: vPrefix,
-//         from: Number(from),
-//         to: Number(to),
-//         assign: user,
-//         name: usrs,
-//       })
-//         .then((res) => {
-//           return {
-//             message: res,
-//           };
-//         })
-//         .catch((err) => {
-//           return {
-//             message: err,
-//           };
-//         });
+  //     if (checkVoucher?.length === 0) {
+  //       let username = await TblEmployee.findOne({
+  //         where: {
+  //           id: user,
+  //         },
+  //       });
+  //       let usrs = username?.toJSON().Username;
+  //       const voucher = await TblVoucher.create({
+  //         vPrefix: vPrefix,
+  //         from: Number(from),
+  //         to: Number(to),
+  //         assign: user,
+  //         name: usrs,
+  //       })
+  //         .then((res) => {
+  //           return {
+  //             message: res,
+  //           };
+  //         })
+  //         .catch((err) => {
+  //           return {
+  //             message: err,
+  //           };
+  //         });
 
-//       await TblEmployee.update(
-//         {
-//           isRequest: false,
-//         },
-//         {
-//           where: {
-//             id: user,
-//           },
-//         }
-//       );
-//       console.log(voucher);
-//       return (data = {
-//         status: true,
-//         message: "Voucher Created Successfully",
-//       });
-//     }
-//     return (data = {
-//       status: false,
-//       message: "This Vouchers is already Assigned to another user",
-//     });
-//   };
+  //       await TblEmployee.update(
+  //         {
+  //           isRequest: false,
+  //         },
+  //         {
+  //           where: {
+  //             id: user,
+  //           },
+  //         }
+  //       );
+  //       console.log(voucher);
+  //       return (data = {
+  //         status: true,
+  //         message: "Voucher Created Successfully",
+  //       });
+  //     }
+  //     return (data = {
+  //       status: false,
+  //       message: "This Vouchers is already Assigned to another user",
+  //     });
+  //   };
 
   generateVouchers = async (req) => {
     const { vPrefix, from, to, user } = req.body;
-  
+
     let data;
-  
+    let upcomingVouchers = await TblVoucher.findAll({
+      where: {
+        assign: user,
+        status: constants.voucherStatus.upcoming,
+      },
+    });
+    if (upcomingVouchers.length) {
+      return {
+        status: true,
+        message: "This user already has vouchers assigned to them",
+      };
+    }
     // Check if user already has any conflicting vouchers assigned
     const assignedVouchers = await TblVoucher.findAll({
       where: {
         assign: user,
         from: { [Op.lte]: to },
-        to: { [Op.gte]: from }
-      }
+        to: { [Op.gte]: from },
+      },
     });
-  
+
     if (assignedVouchers.length > 0) {
       return {
         status: false,
-        message: "This user already has conflicting vouchers assigned to them"
+        message: "This user already has conflicting vouchers assigned to them",
       };
     }
-  
+
     // Check if new voucher range is overlapping with any existing vouchers
     const overlappingVouchers = await TblVoucher.findAll({
       where: {
         from: { [Op.lte]: to },
-        to: { [Op.gte]: from }
-      }
+        to: { [Op.gte]: from },
+      },
     });
-  
+
     if (overlappingVouchers.length > 0) {
       return {
         status: false,
-        message: "This voucher range is overlapping with existing vouchers"
+        message: "This voucher range is overlapping with existing vouchers",
       };
     }
-  
+
     // Create new voucher entry in TblVoucher
     let username = await TblEmployee.findOne({
       where: {
@@ -127,25 +139,34 @@ class voucherCollection {
       },
     });
     let usrs = username?.toJSON().Username;
-  
+
+    // let runningVouchers =  await TblVoucher.findAll({
+    //   where: {
+    //     assign : user,
+    //     status : constants.voucherStatus.running
+    //   }
+    // });
+
     const voucher = await TblVoucher.create({
       vPrefix: vPrefix,
       from: Number(from),
       to: Number(to),
       assign: user,
       name: usrs,
+      voucher: from,
+      status: constants.voucherStatus.upcoming,
     })
-    .then((res) => {
-      return {
-        message: res,
-      };
-    })
-    .catch((err) => {
-      return {
-        message: err,
-      };
-    });
-  
+      .then((res) => {
+        return {
+          message: res,
+        };
+      })
+      .catch((err) => {
+        return {
+          message: err,
+        };
+      });
+
     // Update TblEmployee to set isRequest as false for the user
     await TblEmployee.update(
       {
@@ -157,14 +178,44 @@ class voucherCollection {
         },
       }
     );
-    console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
     return (data = {
       status: true,
       message: "Voucher Created Successfully",
-      voucher: voucher
+      voucher: voucher,
     });
   };
+
+  updateVoucher = async (req, res) => {
+    let voucher = await this.getVoucherr(req, 1);
+    console.log(voucher)
+    if (!voucher?.status) {
+      return {
+        status: false,
+        message: "voucher of this user has been exhausted",
+      };
+    }
+      let voucherNo = voucher.voucher + 1;
+      console.log(voucherNo);
+      let update =
+        voucher?.to == voucherNo
+          ? {
+              voucher: voucherNo,
+              status: constants.voucherStatus.exhausted,
+            }
+          : {
+              voucher: voucherNo,
+            };
+      console.log(update);
+      let result = await TblVoucher.update(update, {
+        where: {
+          id: voucher.id,
+        },
+      });
+
+      return result;
+    
   
+  };
 
   checkVoucher = async (req, voucher) => {
     const userId = req.user.id;
@@ -187,7 +238,6 @@ class voucherCollection {
       },
     });
 
-
     console.log(AssignedVoucher, "Asssinged vouchefrs");
     let allVoucher = await TblVoucher.findOne({
       //geting the assigned voucherrss
@@ -197,15 +247,16 @@ class voucherCollection {
       },
     });
 
-  
-  
-    if (AssignedVoucher === null && allVoucher !== null && allVoucher !== undefined) {
- 
-      if (Number(allVoucher.from) >= Number(voucher) && Number(voucher) <= Number(allVoucher.to)) {
-        console.log(
-          "sec eneter",
-         
-        );
+    if (
+      AssignedVoucher === null &&
+      allVoucher !== null &&
+      allVoucher !== undefined
+    ) {
+      if (
+        Number(allVoucher.from) >= Number(voucher) &&
+        Number(voucher) <= Number(allVoucher.to)
+      ) {
+        console.log("sec eneter");
         if (allVoucher.voucher === 0) {
           data = {
             status: true,
@@ -236,12 +287,10 @@ class voucherCollection {
             }
           }
         }
-      }
-      else{
-       
+      } else {
         let voucherNo = allVoucher.from;
         let fk;
-        
+
         while (await DonationCollection.checkVoucherNumberExists(voucherNo)) {
           if (voucherNo >= allVoucher.to) {
             data = {
@@ -249,17 +298,16 @@ class voucherCollection {
               message: "No Vouchers Assigned Request to Admin  ",
             };
           }
-          
+
           voucherNo++;
           fk = voucherNo.toLocaleString("en-US", {
             minimumIntegerDigits: 4,
             useGrouping: false,
           });
-          
+
           voucherNo = fk;
-    
         }
-       console.log(voucherNo,"fkfkf")
+        console.log(voucherNo, "fkfkf");
         let AssignedVoucher = await TblVoucher.findOne({
           //geting the assigned voucherrss
           where: {
@@ -274,21 +322,18 @@ class voucherCollection {
           },
         });
 
-     if(AssignedVoucher){
-
-        data ={
-          status: true,
-          message: "User Has been assigned",
-          data: voucherNo
+        if (AssignedVoucher) {
+          data = {
+            status: true,
+            message: "User Has been assigned",
+            data: voucherNo,
+          };
+        } else {
+          data = {
+            status: false,
+            message: "Probably voucher exhausted request to admin",
+          };
         }
-      }else{
-        data ={
-          status: false,
-          message: "Probably voucher exhausted request to admin",
-   
-        }
-      }
-    
       }
     } else {
       data = {
@@ -317,7 +362,7 @@ class voucherCollection {
   getVoucher = async (req, id) => {
     let userId = req.user.id;
 
-    console.log(userId);
+    // console.log("--------------------------------?",userId,id);
     let voucher;
 
     if (id) {
@@ -334,6 +379,51 @@ class voucherCollection {
 
       return voucher;
     }
+  };
+
+  getVoucherr = async (req, id) => {
+    let userId = req.user.id;
+    let voucher;
+
+    // if (id) {
+    voucher = await TblVoucher.findOne({
+      where: {
+        assign: userId,
+        status: constants.voucherStatus.running,
+      },
+    });
+    if (!voucher || voucher.voucher >= voucher.to) {
+      voucher = await TblVoucher.findOne({
+        where: {
+          assign: userId,
+          status: constants.voucherStatus.upcoming,
+        },
+      });
+      if (voucher) {
+        let x = await TblVoucher.update(
+          {
+            status: `${constants.voucherStatus.running}`,
+          },
+          {
+            where: {
+              id: voucher.id,
+            },
+          }
+        );
+      }
+    }
+    if (!voucher) {
+      return {
+        status: false,
+        message: "voucher of this user has been exhausted",
+      };
+    }
+    return voucher;
+    // } else {
+    //   voucher = await TblVoucher.findAll();
+
+    //   return voucher;
+    // }
   };
 
   requestVoucher = async (req) => {
