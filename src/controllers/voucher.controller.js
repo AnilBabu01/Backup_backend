@@ -87,89 +87,86 @@ const getVoucherEach = catchAsync(async (req, res) => {
   if (!voucherNo) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
   }
-  if(voucherNo){
-    let exist = Number(voucherNo)
-  let fk = parseInt(exist).toLocaleString("en-US", {
-    minimumIntegerDigits: 4,
-    useGrouping: false,
-  });
-  while (await DonationCollection.checkVoucherNumberExists(fk)) {
-    let nV = Number(fk) + 1;
-    fk = parseInt(nV).toLocaleString("en-US", {
+  if (voucherNo) {
+    let exist = Number(voucherNo);
+    let fk = parseInt(exist).toLocaleString("en-US", {
       minimumIntegerDigits: 4,
       useGrouping: false,
     });
-  
-    voucherNo = fk;
-  }
+    while (await DonationCollection.checkVoucherNumberExists(fk)) {
+      let nV = Number(fk) + 1;
+      fk = parseInt(nV).toLocaleString("en-US", {
+        minimumIntegerDigits: 4,
+        useGrouping: false,
+      });
+
+      voucherNo = fk;
+    }
   }
 
-  
   res.send({
     status: true,
-    data:voucherNo ,
+    data: voucherNo,
   });
 });
-
-
-
 
 const checkVoucher = catchAsync(async (req, res) => {
   const lastID = await DonationCollection.getElecLastID();
-let voucherNo = lastID + 1;
-voucherNo = parseInt(voucherNo).toLocaleString("en-US", {
-  minimumIntegerDigits: 4,
-  useGrouping: false,
-});
-console.log(voucherNo,"voucher");
-
-let checkVoucherNumber = await DonationCollection.checkVoucherNumberExists(voucherNo);
-// console.log(checkVoucherNumber,"check")
-
-if (checkVoucherNumber) {
-  let exist = Number(voucherNo) + 1;
-  let fk = parseInt(exist).toLocaleString("en-US", {
+  let voucherNo = lastID + 1;
+  voucherNo = parseInt(voucherNo).toLocaleString("en-US", {
     minimumIntegerDigits: 4,
     useGrouping: false,
   });
+  console.log(voucherNo, "voucher");
 
-  while (await DonationCollection.checkVoucherNumberExists(fk)) {
-    let nV = Number(voucherNo) + 1;
-    fk = parseInt(nV).toLocaleString("en-US", {
+  let checkVoucherNumber = await DonationCollection.checkVoucherNumberExists(
+    voucherNo
+  );
+  // console.log(checkVoucherNumber,"check")
+
+  if (checkVoucherNumber) {
+    let exist = Number(voucherNo) + 1;
+    let fk = parseInt(exist).toLocaleString("en-US", {
       minimumIntegerDigits: 4,
       useGrouping: false,
     });
-    voucherNo = fk;
+
+    while (await DonationCollection.checkVoucherNumberExists(fk)) {
+      let nV = Number(voucherNo) + 1;
+      fk = parseInt(nV).toLocaleString("en-US", {
+        minimumIntegerDigits: 4,
+        useGrouping: false,
+      });
+      voucherNo = fk;
+    }
+  } else {
+    console.log("NO ALREADY VOUCHER EXISTS");
   }
-} else {
-  console.log("NO ALREADY VOUCHER EXISTS");
-}
 
-let isCancelled = await DonationCollection.getCancelledVoucher(voucherNo);
-let data;
-if (isCancelled) {
-  let nV = Number(voucherNo) + 1;
-  let fk = parseInt(nV).toLocaleString("en-US", {
-    minimumIntegerDigits: 4,
-    useGrouping: false,
+  let isCancelled = await DonationCollection.getCancelledVoucher(voucherNo);
+  let data;
+  if (isCancelled) {
+    let nV = Number(voucherNo) + 1;
+    let fk = parseInt(nV).toLocaleString("en-US", {
+      minimumIntegerDigits: 4,
+      useGrouping: false,
+    });
+    data = await VoucherCollection.checkVoucher(req, fk);
+  } else {
+    console.log("oassibg voucehr", voucherNo);
+    data = await VoucherCollection.checkVoucher(req, voucherNo);
+  }
+
+  console.log(data);
+
+  if (!data) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "!something Went Wrong");
+  }
+
+  res.status(200).send({
+    status: data.status,
+    message: data.message,
   });
-  data = await VoucherCollection.checkVoucher(req, fk);
-} else {
-  console.log("oassibg voucehr",voucherNo)
-  data = await VoucherCollection.checkVoucher(req, voucherNo);
-}
-
-console.log(data);
-
-if (!data) {
-  throw new ApiError(httpStatus.UNAUTHORIZED, "!something Went Wrong");
-}
-
-res.status(200).send({
-  status: data.status,
-  message: data.message,
-});
-
 });
 
 const getVoucher = catchAsync(async (req, res) => {
@@ -289,7 +286,6 @@ const changeReceiptStatus = catchAsync(async (req, res) => {
   });
 });
 
-
 const deleteVoucher = catchAsync(async (req, res) => {
   const data = await VoucherCollection.deleteVoucher(req);
 
@@ -315,7 +311,6 @@ const editVoucher = catchAsync(async (req, res) => {
     message: data.message,
   });
 });
-
 
 module.exports = {
   GenerateVoucher,
