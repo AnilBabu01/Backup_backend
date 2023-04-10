@@ -1268,7 +1268,6 @@ userId==1? whereClause =  {
             },
           }
         );
-        console.log(data)
       });
     });
     return {
@@ -2635,7 +2634,7 @@ let count =0;
       })
       .concat(elecDonationEmployees, manualDonationEmployees);
 
-      const resultData = result.reduce((acc, item) => {
+      let resultData = result.reduce((acc, item) => {
         const { type, donationType, employeeName } = item;
       let key = `${type}_${donationType}`
       if(user){
@@ -2671,8 +2670,8 @@ let count =0;
           acc[key].electric_bank_TOTAL_AMOUNT += item.electric_bank_TOTAL_AMOUNT;
         }
 
-        if (item.hasOwnProperty('elec_cash_TOTAL_AMOUNT')) {
-          acc[key].elec_cash_TOTAL_AMOUNT += item.elec_cash_TOTAL_AMOUNT;
+        if (item.hasOwnProperty('electric_cash_TOTAL_AMOUNT')) {
+          acc[key].electric_cash_TOTAL_AMOUNT += item.electric_cash_TOTAL_AMOUNT;
         }
 
         if (item.hasOwnProperty('electric_cheque_TOTAL_AMOUNT')) {
@@ -2707,8 +2706,40 @@ let count =0;
       
       console.log("count---->", count);
       
-      
-    return Object.values(resultData);
+      resultData = Object.values(resultData)
+      let finalData = [];
+      resultData.forEach(item=>{
+        if(item.donationType=='manual'){
+          if (item.hasOwnProperty('manual_bank_TOTAL_AMOUNT') && item.manual_bank_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('manual_cash_TOTAL_AMOUNT')&& item.manual_cash_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('manual_cheque_TOTAL_AMOUNT')&& item.manual_cheque_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('manual_item_TOTAL_AMOUNT')&& item.manual_item_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+        }
+
+        if(item.donationType=='electric'){
+          if (item.hasOwnProperty('electric_bank_TOTAL_AMOUNT') && item.electric_bank_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('electric_cash_TOTAL_AMOUNT')&& item.electric_cash_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('electric_cheque_TOTAL_AMOUNT')&& item.electric_cheque_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+          else if (item.hasOwnProperty('electric_item_TOTAL_AMOUNT')&& item.electric_item_TOTAL_AMOUNT>0) {
+            finalData.push(item)
+          }
+        }
+      })
+    return finalData;
   };
 
   
