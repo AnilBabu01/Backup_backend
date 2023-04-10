@@ -400,10 +400,7 @@ module.exports = {
   getReceipt,
   changeReceiptStatus,
   getVoucherEach,
-<<<<<<< Updated upstream
   NewgetVoucherEach,
-  checknewvoucher
-=======
+  checknewvoucher,
   updateVoucher
->>>>>>> Stashed changes
 };
