@@ -81,7 +81,11 @@ router
   .put(adminAuth(), voucherController.changeReceiptStatus);
 router.route("/get-receipt").get(adminAuth(), voucherController.getReceipt);
 router.route("/voucher-get").get(adminAuth(), voucherController.getVoucherEach);
+
+//new routes
 router.route("/voucher-get-new").get(voucherController.NewgetVoucherEach);
+router.route("/voucher-check-new").get(voucherController.checknewvoucher);
+
 router
   .route("/getuser-by-num")
   .get(adminAuth(), donationController.getuserBynum);

@@ -133,6 +133,44 @@ const NewgetVoucherEach = catchAsync(async (req, res) => {
 
 
 
+const checknewvoucher = catchAsync(async (req, res) => {
+  try {
+    const getvoucher =  await DonationCollection.NewgetVoucherEach(req.query.id);
+    const assignedvoucher =  await DonationCollection.newassignedvoucher(req.query.id);
+
+
+    if(getvoucher.length !== 0 && assignedvoucher!== 0 ){
+      if(getvoucher[0].voucherNo === assignedvoucher[0].to ){
+        return res.status(httpStatus.OK).send({
+          status : true,
+          message : "all voucher used ",
+        })
+      }
+      else{
+        return res.status(httpStatus.BAD_REQUEST).send({
+          status : false,
+          message : "still have voucher",
+        })
+      }
+     
+    }else{
+      return res.status(httpStatus.BAD_REQUEST).send({
+        status : false,
+        message : "no data found",
+      })
+    }
+
+  } catch (error) {
+    return res.status(httpStatus.BAD_REQUEST).send({
+      status : false,
+      message : error.message,
+      data:error,
+    })
+  }
+})
+
+
+
 
 const checkVoucher = catchAsync(async (req, res) => {
   const lastID = await DonationCollection.getElecLastID();
@@ -351,5 +389,6 @@ module.exports = {
   getReceipt,
   changeReceiptStatus,
   getVoucherEach,
-  NewgetVoucherEach
+  NewgetVoucherEach,
+  checknewvoucher
 };

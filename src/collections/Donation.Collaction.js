@@ -1393,6 +1393,19 @@ userId==1? whereClause =  {
     return result;
   };
 
+
+  newassignedvoucher = async (id) => {
+    const result = db.Vouchers.findAll({
+      where: {
+        assign: id,
+      },
+      order: [
+        ["id", "DESC"],
+      ],
+    });
+    return result;
+  };
+
   donationRecord = async (req) => {
     const userId = req.user.id;
     const record = await TblDonation.findAll({
