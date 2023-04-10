@@ -1,51 +1,50 @@
 const shortid = require('shortid');
-const http = require("https");
+const request = require("request");
 
 const sendSms = (mobile, amount, url, type, itemName, weight, Rno) => {
 
-  const longUrl ='https://shreebadebaba-562bd.web.app/onlinereceipt/online-2023-24-036'
+  if (mobile.length !== 10 || !url || !amount) {
+    return {
+      status: false,
+      message: "Please check arguments"
+    };
+  }
 
-
-
+  const payload = {
+    flow_id: "63bc029a28949f0a2c471ee5",
+    sender: "KNDLPR",
+    recipients: [{
+      mobiles: `91${mobile}`,
+      receipt: url,
+      date: new Date().toLocaleDateString(),
+      ...(type ? { ItemName: itemName, weight: weight, receipt: `${Rno}${url}` } : { amount: amount }),
+    }],
+  };
 
   const options = {
-    method: "POST",
-    hostname: "api.msg91.com",
-    port: null,
-    path: "/api/v5/flow/",
+    url: "https://api.msg91.com/api/v5/flow/",
     headers: {
       authkey: "293235Ak5u9izJS564319a6aP1",
       "content-type": "application/json",
     },
+    json: true,
+    body: payload,
   };
 
-  const req = http.request(options, function (res) {
-    const chunks = [];
-
-    res.on("data", function (chunk) {
-      chunks.push(chunk);
-    });
-
-    res.on("end", function () {
-      const body = Buffer.concat(chunks);
-      console.log(body.toString());
-    });
+  request.post(options, (error, response, body) => {
+    if (error) {
+      console.error(error);
+      return {
+        status: false,
+        message: error
+      }
+    } else {
+      return {
+        status: true,
+        message: body
+      }
+    }
   });
-
-  let d = new Date();
-
-  const date = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-  if (type) {
-    req.write(
-      `{\n  \"flow_id\": \"63bc029a28949f0a2c471ee5\",\n  \"sender\": \"KNDLPR\",\n  \"recipients\": [\n {\n   \"mobiles\": \"91${mobile}\",\n  \"ItemName\": \"${itemName}\",\n  \"weight\": \"${weight}\",\n  \"mobiles\": \"91${mobile}\",\n  \"receipt\": ${Rno}\"${url}\",\n  \"date\": \"${date}\"\n}\n  ]\n`
-    );
-  } else {
-    req.write(
-      `{\n  \"flow_id\": \"63bc029a28949f0a2c471ee5\",\n  \"sender\": \"KNDLPR\",\n  \"recipients\": [\n {\n   \"mobiles\": \"91${mobile}\",\n  \"amount\": \"${amount}\",\n  \"receipt\": \"${url}\",\n  \"date\": \"${date}\"\n}\n  ]\n}`
-    );
-  }
-
-  req.end();
 };
 
 module.exports = sendSms;
