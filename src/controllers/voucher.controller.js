@@ -119,7 +119,7 @@ const NewgetVoucherEach = catchAsync(async (req, res) => {
     return res.status(httpStatus.OK).send({
       status : true,
       message : "latest voucher found",
-      data : getvoucher[0].voucherNo
+      data : parseInt(getvoucher[0].voucherNo) + 1
     })
 
   } catch (error) {
