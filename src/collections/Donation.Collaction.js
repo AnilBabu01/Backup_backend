@@ -540,8 +540,7 @@ class DonationCollaction {
     return checkVoucherNumber;
   };
 
-  addElecDonation = async (req, voucherNo,receipt, assv) => {
-   
+  addElecDonation = async (req, voucherNo, receipt, assv) => {
     try {
       const {
         gender,
@@ -629,8 +628,6 @@ class DonationCollaction {
           });
           await TblelecDonationItem.bulkCreate(ElecDonationItems).then(
             async (resp) => {
-            
-
               let incr = Number(voucherNo) + 1;
               console.log("voucher NICREMENTNG", incr);
               let newvoucherNo = parseInt(incr).toLocaleString("en-US", {
@@ -1353,6 +1350,19 @@ class DonationCollaction {
   getElecLastID = async () => {
     const lastID = await TblelecDonation.count();
     return lastID;
+  };
+
+  NewgetVoucherEach = async (id) => {
+    const result = db.ElecDonationModel.findAll({
+      where: {
+        created_by: id,
+      },
+      attributes:['id','voucherNo','created_by'],
+      order: [
+        ["voucherNo", "DESC"],
+      ],
+    });
+    return result;
   };
 
   donationRecord = async (req) => {
@@ -2609,7 +2619,6 @@ class DonationCollaction {
     return result;
   };
 
-  
   employeeChangePass = async (req) => {
     let userId = req.user.id;
     let user;
@@ -3383,7 +3392,7 @@ class DonationCollaction {
         ],
       ],
       where: {
-        PAYMENT_STATUS:1,
+        PAYMENT_STATUS: 1,
         DATE_OF_DAAN: {
           [Op.between]: [startOfToday, endOfToday],
         },

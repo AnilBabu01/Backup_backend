@@ -112,6 +112,27 @@ const getVoucherEach = catchAsync(async (req, res) => {
 });
 
 
+const NewgetVoucherEach = catchAsync(async (req, res) => {
+  try {
+    const getvoucher =  await DonationCollection.NewgetVoucherEach(req.query.id);
+
+    console.log(getvoucher);
+    return res.status(httpStatus.OK).send({
+      status : true,
+      message : "latest voucher found",
+      data : getvoucher[0].voucherNo
+    })
+
+  } catch (error) {
+    return res.status(httpStatus.BAD_REQUEST).send({
+      status : false,
+      message : error.message,
+      data:error,
+    })
+  }
+})
+
+
 
 
 const checkVoucher = catchAsync(async (req, res) => {
@@ -332,4 +353,5 @@ module.exports = {
   getReceipt,
   changeReceiptStatus,
   getVoucherEach,
+  NewgetVoucherEach
 };
