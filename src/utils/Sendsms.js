@@ -37,11 +37,11 @@ const sendSms = (mobile, amount, url, type, itemName, weight, Rno) => {
   const date = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
   if (type) {
     req.write(
-      `{\n  \"flow_id\": \"63bc029a28949f0a2c471ee5\",\n  \"mobiles\": \"91${mobile}\",\n  \"ItemName\": \"${itemName}\",\n  \"weight\": \"${weight}\",,\n  \"mobiles\": \"91${mobile}\",\n  \"receipt\": ${Rno}\"${url}\",\n  \"date\": \"${date}\"\n}`
+      `{\n  \"flow_id\": \"63bc029a28949f0a2c471ee5\",\n  \"sender\": \"KNDLPR\",\n  \"recipients\": [\n {\n   \"mobiles\": \"91${mobile}\",\n  \"ItemName\": \"${itemName}\",\n  \"weight\": \"${weight}\",\n  \"mobiles\": \"91${mobile}\",\n  \"receipt\": ${Rno}\"${url}\",\n  \"date\": \"${date}\"\n}\n  ]\n`
     );
   } else {
     req.write(
-      `{\n  \"flow_id\": \"63bc029a28949f0a2c471ee5\",\n  \"mobiles\": \"91${mobile}\",\n  \"amount\": \"${amount}\",\n  \"receipt\": \"${url}\",\n  \"date\": \"${date}\"\n}`
+      `{\n  \"flow_id\": \"63bc029a28949f0a2c471ee5\",\n  \"sender\": \"KNDLPR\",\n  \"recipients\": [\n {\n   \"mobiles\": \"91${mobile}\",\n  \"amount\": \"${amount}\",\n  \"receipt\": \"${url}\",\n  \"date\": \"${date}\"\n}\n  ]\n}`
     );
   }
 
