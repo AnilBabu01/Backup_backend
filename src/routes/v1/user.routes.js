@@ -86,9 +86,10 @@ router
   .route("/add-voucher-user")
   .get(adminAuth(), voucherController.getVoucher);
 
-router.route("/check-voucher").get(auth(), voucherController.checkVoucher);
+router.route("/check-voucher").get(auth(), voucherController.getVoucherr);
 router.route('/req-voucher').get(auth(),voucherController.requestVoucher)
 router.route('/get-req-voucher').get(adminAuth(),voucherController.getrequestVoucher)
+router.route("/update-voucher").post(auth(), voucherController.updateVoucher);
 
 router.route("/edit-cash-donation").put(adminAuth(), donationController.editcashDonation);
 router.route("/edit-item-donation").put(adminAuth(), donationController.editItemDonation);

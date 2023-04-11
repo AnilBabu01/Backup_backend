@@ -20,8 +20,22 @@ const empRolesReverse = {
     7 :"Elect Donation"
 }
 
+const voucherStatus = {
+    exhausted : 0,
+    running : 1,
+    upcoming : 2
+}
+
+const reverseVoucherStatus = {
+    0:'exhausted',
+    1:'running',
+    2:'upcoming'
+}
+
 module.exports = {
     empRoles,
-    empRolesReverse
+    empRolesReverse,
+    voucherStatus,
+    reverseVoucherStatus
 }
 
