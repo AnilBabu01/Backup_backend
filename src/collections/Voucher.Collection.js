@@ -125,6 +125,7 @@ class voucherCollection {
       },
     });
 
+    console.log(overlappingVouchers)
     if (overlappingVouchers.length > 0) {
       return {
         status: false,

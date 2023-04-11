@@ -15,12 +15,12 @@ const sendSms = (mobile, amount, url, type, itemName, weight, Rno) => {
     sender: "KNDLPR",
     recipients: [{
       mobiles: `91${mobile}`,
-      receipt: url,
+      receipt: Rno,
       date: new Date().toLocaleDateString(),
-      ...(type ? { ItemName: itemName, weight: weight, receipt: `${Rno}${url}` } : { amount: amount }),
+      ...(type ? { ItemName: itemName, weight: weight } : { amount: amount }),
     }],
   };
-
+console.log(payload)
   const options = {
     url: "https://api.msg91.com/api/v5/flow/",
     headers: {
