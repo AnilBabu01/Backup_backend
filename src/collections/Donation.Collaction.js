@@ -791,6 +791,7 @@ class DonationCollaction {
       donation_time,
       modeOfDonation,
       donation_item,
+      gender
     } = req.body;
 
     const userId = req.user.id;
@@ -801,7 +802,7 @@ class DonationCollaction {
     }:whereClause= {
       created_by: userId,
       id: id,
-      modeOfDonation: "4",
+      // modeOfDonation: "4",
     };
     await TblelecDonation.update(
       {
@@ -811,6 +812,7 @@ class DonationCollaction {
         new_member: new_member,
         donation_date: donation_date,
         donation_time: donation_time,
+        gender : gender
       },
       {
         where: whereClause,
@@ -1654,12 +1656,14 @@ userId==1? whereClause =  {
   };
 
   getAllocatedVoucherList = async (req) => {
-    let { userId } = req.query;
+    let { userId,from,to } = req.query;
 
     let whereClause = {};
 
     if (userId) {
       whereClause.assign = userId;
+      whereClause.from = from;
+      whereClause.to = to
     }
 
     const voucherRanges = await TblVouchers.findAll({
