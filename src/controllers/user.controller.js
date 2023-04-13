@@ -200,7 +200,7 @@ const changePassForgot = catchAsync(async (req, res) => {
 
 const sendDonationsms = catchAsync(async (req, res) => {
   const { mobile, amount, url, type, itemName, weight, rno } = req.body;
-  const data = sendSms(mobile, amount, url, type, itemName, weight, rno);
+  const data = await sendSms(mobile, amount, url, type, itemName, weight, rno);
   if (!data?.status){
     return res.status(400).send(data)
   }

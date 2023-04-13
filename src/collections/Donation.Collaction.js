@@ -9,6 +9,7 @@ const ApiError = require("../utils/ApiError");
 const sendSms = require("../utils/Sendsms");
 const httpStatus = require("http-status");
 const { request } = require("http");
+const constants = require('./../utils/constants')
 
 db.donationModel.hasMany(db.donationItem, {
   foreignKey: "donationId",
@@ -629,20 +630,19 @@ class DonationCollaction {
           await TblelecDonationItem.bulkCreate(ElecDonationItems).then(
             async (resp) => {
               let incr = Number(voucherNo) + 1;
-              console.log("voucher NICREMENTNG", incr);
               let newvoucherNo = parseInt(incr).toLocaleString("en-US", {
                 minimumIntegerDigits: 4,
                 useGrouping: false,
               });
+              let whereCondition = req?.voucherId? {id:req.voucherId} : {
+                status: true,
+                assign: userId,
+              }
+              let update = incr> req?.to ? {status : constants.voucherStatus.exhausted }:{voucher : newvoucherNo}
               await TblVouchers.update(
+                update,
                 {
-                  voucher: vD.voucher === 0 ? voucherNo : newvoucherNo,
-                },
-                {
-                  where: {
-                    status: true,
-                    assign: userId,
-                  },
+                  where: whereCondition,
                 }
               );
 
@@ -2517,9 +2517,6 @@ userId==1? whereClause =  {
       whereClause.DATE_OF_DAAN = { [Op.between]: [from, to] };
       whereClause1.donation_date = { [Op.between]: [from, to] };
     }
-    // console.log("whereClause------------------->",whereClause)
-    // console.log("whereClause1------------------->",whereClause1)
-    // console.log("whereClauseinc------------------->",whereClauseinc)
 
     const tbl_donations_result = await TblNewDonation.findAll({
       attributes: [

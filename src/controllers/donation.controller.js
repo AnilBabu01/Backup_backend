@@ -47,24 +47,19 @@ const addelecDonation = catchAsync(async (req, res) => {
   if (!data) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
   }
-  if (data.status == "true") {
+  if (data.status == true) {
     res.status(httpStatus.CREATED).send({
       status: true,
       msg: "Electric Donation added successfully.",
       data: data,
-      created_username: "anil",
     });
-  } else if (data.status == "false") {
-    res.status(httpStatus.UNAUTHORIZED).send({
-      status: false,
-      msg: "Voucher Exhausted request to admin ",
-    });
+  } else if (data.status == false) {
+    res.status(httpStatus.UNAUTHORIZED).send(data);
   } else {
     res.status(httpStatus.CREATED).send({
       status: true,
       msg: "Electric Donation added successfully.",
-      data: data,
-      created_username: "anil",
+      data: data
     });
   }
 });

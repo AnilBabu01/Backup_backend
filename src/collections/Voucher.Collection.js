@@ -393,7 +393,7 @@ class voucherCollection {
         status: constants.voucherStatus.running,
       },
     });
-    if (!voucher || voucher.voucher >= voucher.to) {
+    if (!voucher || voucher.voucher > voucher.to) {
       voucher = await TblVoucher.findOne({
         where: {
           assign: userId,

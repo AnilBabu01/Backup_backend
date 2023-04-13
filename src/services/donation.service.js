@@ -123,7 +123,7 @@ const manualsearchDonation = async (req) => {
   return donation;
 };
 
-const addelecDonation = async (req) => {
+const addelecDonations = async (req) => {
   let voucherNo;
   let vno;
   let lastID;
@@ -240,6 +240,50 @@ if(check.data){
     );
     return ElecDonation;
   }
+};
+
+const addelecDonation = async (req) => {
+  let voucherNo;
+  let vno;
+  let lastID;
+
+  let voucherDetails = await VoucherCollection.getVoucherr(req)
+  if(voucherDetails?.status==false){
+    return {status :false,
+    message : voucherDetails.message} 
+  }
+  voucherNo = voucherDetails.voucher
+  req.voucherId = voucherDetails.id
+  req.to = voucherDetails.to
+  // console.log(voucherNo,"inital voucher");
+
+  let checkVoucherNumber = await DonationCollection.checkVoucherNumberExists(
+    voucherNo
+  ); 
+  if (checkVoucherNumber) {
+   return { 
+    status : "false",
+    message : `voucher : ${voucherNo} has been used `
+   }
+  }
+
+  let isCancelled = await DonationCollection.getCancelledVoucher(voucherNo)
+  if (isCancelled){
+   return{
+    status : false,
+    message : `voucher :
+     ${voucherNo} has been cancelled `
+   }
+  }
+  let receipts = await VoucherCollection.getReceipt(req.body.modeOfDonation);
+  const ElecDonation = await DonationCollection.addElecDonation(
+    req,
+    voucherNo,
+    receipts
+  );
+  return {
+    status :true,
+    message: ElecDonation}
 };
 
 const addmanualDonation = async (req) => {
