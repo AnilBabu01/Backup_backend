@@ -535,6 +535,16 @@ const centralizeduserDonationAmount = catchAsync(async (req, res) => {
   });
 });
 
+const getConsReport = catchAsync(async (req, res) => {
+  const data = await donationService.getConsReport(req);
+
+  res.status(200).send({
+    status: true,
+    msg: "Success",
+    data: data || [],
+  });
+});
+
 const employeeChangePass = catchAsync(async (req, res) => {
   const data = await donationService.employeeChangePass(req);
   if (!data) {
@@ -689,5 +699,6 @@ module.exports = {
   searchElectric,
   searchManual,
   deletemanualDonation,
-  deleteDonationType
+  deleteDonationType,
+  getConsReport
 };

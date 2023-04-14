@@ -137,6 +137,11 @@ router
 router
   .route("/centralized-report")
   .get(adminAuth(), donationController.centralizeduserDonationAmount);
+
+router
+  .route("/get-cons-report")
+  .get(adminAuth(), donationController.getConsReport);
+  
 router
   .route("/change-pass")
   .put(adminAuth(), donationController.employeeChangePass);

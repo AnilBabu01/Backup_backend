@@ -506,6 +506,12 @@ const centralizeduserDonationAmount = async (req) => {
   return report;
 };
 
+const getConsReport = async (req) => {
+  const report = await DonationCollection.centralizeduserDonationAmount(req,'consolidated');
+
+  return report;
+};
+
 const employeeChangePass = async (req) => {
   const report = await DonationCollection.employeeChangePass(req);
 
@@ -597,5 +603,6 @@ module.exports = {
   dashemployeeTotalManual,
   dashemployeeTotalOnline,
   deletemanualDonation,
-  deleteDonationType
+  deleteDonationType,
+  getConsReport
 };

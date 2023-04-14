@@ -2497,7 +2497,9 @@ userId==1? whereClause =  {
     return res;
   };
 
-  centralizeduserDonationAmount = async (req) => {
+  centralizeduserDonationAmount = async (req, reportType) => {
+    let groupBy = []
+    reportType==='consolidated' ? groupBy = ['created_by'] : groupBy = ["modeOfDonation", "type"]
     let { fromDate, toDate, user, type } = req.query;
     let from = new Date(fromDate);
     let to = new Date(toDate);
@@ -2547,7 +2549,7 @@ userId==1? whereClause =  {
         where: whereClauseinc,
       },
       where: whereClause1,
-      group: ["modeOfDonation", "type"],
+      group: groupBy,
     });
     // return tbl_elec_donations_result
     const tbl_manual_donations_result = await TblmanualDonation.findAll({
@@ -2569,7 +2571,7 @@ userId==1? whereClause =  {
         where: whereClauseinc,
       },
       where: whereClause1,
-      group: ["modeOfDonation", "type"],
+      group: groupBy,
     });
     // Fetch employee information for electronic donations
     const elecDonationEmployees = await Promise.all(
@@ -2660,9 +2662,9 @@ let count =0;
 
       let resultData = result.reduce((acc, item) => {
         const { type, donationType, employeeName } = item;
-      let key = `${type}_${donationType}`
+      let key = employeeName+"_"+donationType
       if(user){
-       key = `${type}_${donationType}_${employeeName}`;
+       key = employeeName+"_"+donationType;
       }
         if (!acc[key]) {
           if(donationType=='manual'){
@@ -2690,20 +2692,19 @@ let count =0;
         }
         }
         if(acc[key]){
-        if (item.hasOwnProperty('electric_bank_TOTAL_AMOUNT')) {
-          acc[key].electric_bank_TOTAL_AMOUNT += item.electric_bank_TOTAL_AMOUNT;
+        if (item.hasOwnProperty('elec_bank_TOTAL_AMOUNT')) {
+          acc[key].electric_bank_TOTAL_AMOUNT += item.elec_bank_TOTAL_AMOUNT;
         }
 
-        if (item.hasOwnProperty('electric_cash_TOTAL_AMOUNT')) {
-          acc[key].electric_cash_TOTAL_AMOUNT += item.electric_cash_TOTAL_AMOUNT;
+        if (item.hasOwnProperty('elec_cash_TOTAL_AMOUNT')) {
+          acc[key].electric_cash_TOTAL_AMOUNT += item.elec_cash_TOTAL_AMOUNT;
         }
 
-        if (item.hasOwnProperty('electric_cheque_TOTAL_AMOUNT')) {
-          acc[key].electric_cheque_TOTAL_AMOUNT += item.electric_cheque_TOTAL_AMOUNT;
-        }
+        if (item.hasOwnProperty('elec_cheque_TOTAL_AMOUNT')) {
+          acc[key].electric_cheque_TOTAL_AMOUNT += item.elec_cheque_TOTAL_AMOUNT;}
 
-        if (item.hasOwnProperty('electric_item_TOTAL_AMOUNT')) {
-          acc[key].electric_item_TOTAL_AMOUNT += item.electric_item_TOTAL_AMOUNT;
+        if (item.hasOwnProperty('elec_item_TOTAL_AMOUNT')) {
+          acc[key].electric_item_TOTAL_AMOUNT += item.elec_item_TOTAL_AMOUNT;
         }
         
         if (item.hasOwnProperty('manual_bank_TOTAL_AMOUNT')) {
