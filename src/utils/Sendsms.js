@@ -15,13 +15,12 @@ const sendSms = async (mobile, amount, url, type, itemName, weight, Rno) => {
     sender: "KNDLPR",
     // recipients: [{
       mobiles: `91${mobile}`,
-      receipt: Rno,
-      date: new Date().toLocaleDateString(),
-      amount: amount
+      var2: Rno,
+      // date: new Date().toLocaleDateString(),
+      var1: amount
       // ...(type ? { ItemName: itemName, weight: weight } : { amount: amount }),
     // }],
   };
-console.log("------------------>",payload)
   const options = {
     url: "https://api.msg91.com/api/v5/flow/",
     headers: {
