@@ -507,7 +507,7 @@ const centralizeduserDonationAmount = async (req) => {
 };
 
 const getConsReport = async (req) => {
-  const report = await DonationCollection.centralizeduserDonationAmount(req,'consolidated');
+  const report = await DonationCollection.getConsReport(req);
 
   return report;
 };
