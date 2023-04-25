@@ -691,6 +691,10 @@ class DonationCollaction {
 
       const userId = req.user.id;
       console.log(userId);
+      
+      if(await this.checkReceipt(ReceiptNo)===true){
+        return "Receipt Already Exists";       
+      }
 
       const result = await TblmanualDonation.create({
         name,
@@ -3245,6 +3249,11 @@ userId==1? whereClause =  {
     return {
       data: result,
     };
+  };
+
+  checkReceipt = async (ReceiptNo) => {
+    const receiptExists = await TblmanualDonation.findOne({where:{ReceiptNo}});
+    return receiptExists?true:false;
   };
 
   dashAdminTotalManual = async () => {

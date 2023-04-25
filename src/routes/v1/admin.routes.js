@@ -226,3 +226,7 @@ router
   .get(adminAuth(), donationController.dashemployeeTotalOnline);
 
 router.post('/delete-meanual-donation',adminAuth(), donationController.deletemanualDonation)
+
+router
+  .route("/check-receipt")
+  .post(adminAuth(), donationController.checkReceipt);

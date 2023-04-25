@@ -70,6 +70,11 @@ const addmanualDonation = catchAsync(async (req, res) => {
   if (!data) {
     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
   }
+
+  if (data==='Receipt Already Exists') {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Receipt Already Exists");
+  }
+
   res.status(httpStatus.CREATED).send({
     status: true,
     msg: "Manual Donation added successfully.",
@@ -591,6 +596,14 @@ const dashemployeeTotal = catchAsync(async (req, res) => {
   });
 });
 
+const checkReceipt = catchAsync(async (req, res) => {
+  const data = await donationService.checkReceipt(req);
+
+  res.status(200).send({
+    data,
+  });
+});
+
 const dashAdminTotalManual = catchAsync(async (req, res) => {
   const data = await donationService.dashAdminTotalManual(req);
 
@@ -700,5 +713,6 @@ module.exports = {
   searchManual,
   deletemanualDonation,
   deleteDonationType,
-  getConsReport
+  getConsReport,
+  checkReceipt
 };

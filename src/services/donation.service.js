@@ -83,6 +83,12 @@ const dashemployeeTotal = async (req) => {
   return donation;
 };
 
+const checkReceipt = async (req) => {
+  const receiptExists = await DonationCollection.checkReceipt(req.body.ReceiptNo);
+
+  return receiptExists;
+};
+
 const dashAdminTotalManual = async (req) => {
   const donation = await DonationCollection.dashAdminTotalManual(req);
 
@@ -604,5 +610,6 @@ module.exports = {
   dashemployeeTotalOnline,
   deletemanualDonation,
   deleteDonationType,
-  getConsReport
+  getConsReport,
+  checkReceipt
 };
