@@ -3074,6 +3074,7 @@ userId==1? whereClause =  {
         donation_date: {
           [Op.between]: [startOfToday, endOfToday],
         },
+        isActive:true
       },
       group: ["created_by", "modeOfDonation"],
     });
@@ -3182,6 +3183,7 @@ userId==1? whereClause =  {
         donation_date: {
           [Op.between]: [startOfToday, endOfToday],
         },
+        isActive:true,
         created_by: req.user.id,
       },
       group: ["created_by", "modeOfDonation"],
@@ -3294,6 +3296,7 @@ userId==1? whereClause =  {
         donation_date: {
           [Op.between]: [startOfToday, endOfToday],
         },
+        isActive:true
       },
       group: ["created_by", "modeOfDonation"],
     });
@@ -3401,6 +3404,7 @@ userId==1? whereClause =  {
         donation_date: {
           [Op.between]: [startOfToday, endOfToday],
         },
+        isActive:true,
         created_by: req.user.id,
       },
       group: ["created_by", "modeOfDonation"],
