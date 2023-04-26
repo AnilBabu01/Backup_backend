@@ -550,6 +550,16 @@ const getConsReport = catchAsync(async (req, res) => {
   });
 });
 
+const getOnlineReport = catchAsync(async (req, res) => {
+  const data = await donationService.getOnlineReport(req);
+
+  res.status(200).send({
+    status: true,
+    msg: "Success",
+    data: data || [],
+  });
+});
+
 const employeeChangePass = catchAsync(async (req, res) => {
   const data = await donationService.employeeChangePass(req);
   if (!data) {
@@ -714,5 +724,6 @@ module.exports = {
   deletemanualDonation,
   deleteDonationType,
   getConsReport,
-  checkReceipt
+  checkReceipt,
+  getOnlineReport
 };

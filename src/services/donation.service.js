@@ -518,6 +518,12 @@ const getConsReport = async (req) => {
   return report;
 };
 
+const getOnlineReport = async (req) => {
+  const report = await DonationCollection.getOnlineReport(req);
+
+  return report;
+};
+
 const employeeChangePass = async (req) => {
   const report = await DonationCollection.employeeChangePass(req);
 
@@ -611,5 +617,6 @@ module.exports = {
   deletemanualDonation,
   deleteDonationType,
   getConsReport,
-  checkReceipt
+  checkReceipt,
+  getOnlineReport
 };

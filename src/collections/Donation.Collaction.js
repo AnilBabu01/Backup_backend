@@ -2639,9 +2639,9 @@ userId==1? whereClause =  {
       let dataElecOrManObj = {}
       for (let employee of data) {
         let key = employee.type;
-        if(donationType ==='online'){
-          key = employee.TYPE;
-        }
+        // if(donationType ==='online'){
+        //   key = employee.TYPE;
+        // }
         if (dataElecOrManObj[key]) {
           if (dataElecOrManObj[key].donationType === 'electric') {
             dataElecOrManObj[key].electric_bank_TOTAL_AMOUNT = employee.modeOfDonation === '1' ? dataElecOrManObj[key].electric_bank_TOTAL_AMOUNT + employee.total_amount : dataElecOrManObj[key].electric_bank_TOTAL_AMOUNT;
@@ -2655,10 +2655,10 @@ userId==1? whereClause =  {
             dataElecOrManObj[key].manual_cheque_TOTAL_AMOUNT = employee.modeOfDonation === '3' ? dataElecOrManObj[key].manual_cheque_TOTAL_AMOUNT + employee.total_amount : dataElecOrManObj[key].manual_cheque_TOTAL_AMOUNT;
             dataElecOrManObj[key].manual_item_TOTAL_AMOUNT = employee.modeOfDonation === '4' ? dataElecOrManObj[key].manual_item_TOTAL_AMOUNT + employee.total_amount : dataElecOrManObj[key].manual_item_TOTAL_AMOUNT;
           }
-          if (dataElecOrManObj[key].donationType === 'online') {
-            dataElecOrManObj[key].cheque = employee.MODE_OF_DONATION === 'CHEQUE' ? dataElecOrManObj[key].cheque + employee.TOTAL_AMOUNT : dataElecOrManObj[key].cheque;
-            dataElecOrManObj[key].online = employee.MODE_OF_DONATION === 'ONLINE' ? dataElecOrManObj[key].online + employee.TOTAL_AMOUNT : dataElecOrManObj[key].online;
-          }
+          // if (dataElecOrManObj[key].donationType === 'online') {
+          //   dataElecOrManObj[key].cheque = employee.MODE_OF_DONATION === 'CHEQUE' ? dataElecOrManObj[key].cheque + employee.TOTAL_AMOUNT : dataElecOrManObj[key].cheque;
+          //   dataElecOrManObj[key].online = employee.MODE_OF_DONATION === 'ONLINE' ? dataElecOrManObj[key].online + employee.TOTAL_AMOUNT : dataElecOrManObj[key].online;
+          // }
         }
         else {
           if (donationType === 'electric') {
@@ -2681,15 +2681,15 @@ userId==1? whereClause =  {
               manual_item_TOTAL_AMOUNT: employee.modeOfDonation === '4' ? employee.total_amount : 0
             }
           }
-          if (donationType === 'online') {
-            console.log(employee.TYPE)
-            dataElecOrManObj[key] = {
-              type: employee.TYPE,
-              donationType: "online",
-              cheque: employee.MODE_OF_DONATION === 'CHEQUE' ? employee.TOTAL_AMOUNT : 0,
-              online: employee.MODE_OF_DONATION === 'ONLINE' ? employee.TOTAL_AMOUNT : 0,                          
-            }
-          }
+          // if (donationType === 'online') {
+          //   console.log(employee.TYPE)
+          //   dataElecOrManObj[key] = {
+          //     type: employee.TYPE,
+          //     donationType: "online",
+          //     cheque: employee.MODE_OF_DONATION === 'CHEQUE' ? employee.TOTAL_AMOUNT : 0,
+          //     online: employee.MODE_OF_DONATION === 'ONLINE' ? employee.TOTAL_AMOUNT : 0,                          
+          //   }
+          // }
         }
 
       }
@@ -2713,11 +2713,57 @@ userId==1? whereClause =  {
 
     tbl_elec_donations_result = groupByModeOfDonation(tbl_elec_donations_result, 'electric');
     tbl_manual_donations_result = groupByModeOfDonation(tbl_manual_donations_result, 'manual');
-    tbl_donations_result = groupByModeOfDonation(tbl_donations_result, 'online');
+    // tbl_donations_result = groupByModeOfDonation(tbl_donations_result, 'online');
 
     let result = tbl_elec_donations_result.concat(tbl_manual_donations_result);
-    result = result.concat(tbl_donations_result);
+    // result = result.concat(tbl_donations_result);
     return result;
+  };
+
+  getOnlineReport = async (req) => {
+    let { fromDate, toDate, type } = req.query;
+    let whereClause = {};
+    if (type) {
+      whereClause.TYPE = type;
+    }
+    if (fromDate && toDate) {
+      whereClause.DATE_OF_DAAN = { [Op.between]: [fromDate, toDate] };
+    }
+
+    let tbl_donations_result = await TblNewDonation.findAll({
+      attributes: [
+        "MODE_OF_DONATION",
+        "TYPE",
+        [TblNewDonation.sequelize.literal("SUM(AMOUNT)"), "TOTAL_AMOUNT"],
+      ],
+      // where: whereClause,
+      group: ["MODE_OF_DONATION", "TYPE"],
+      raw: true,
+      where:whereClause,
+      nest: true
+    });
+
+    const groupByModeOfDonation = (data) => {
+      let dataElecOrManObj = {}
+      for (let employee of data) {
+        const key = employee.TYPE;        
+        if (dataElecOrManObj[key]) {
+            dataElecOrManObj[key].cheque = employee.MODE_OF_DONATION === 'CHEQUE' ? dataElecOrManObj[key].cheque + employee.TOTAL_AMOUNT : dataElecOrManObj[key].cheque;
+            dataElecOrManObj[key].online = employee.MODE_OF_DONATION === 'ONLINE' ? dataElecOrManObj[key].online + employee.TOTAL_AMOUNT : dataElecOrManObj[key].online;          
+        }
+        else {
+            dataElecOrManObj[key] = {
+              type: employee.TYPE,
+              donationType: "online",
+              cheque: employee.MODE_OF_DONATION === 'CHEQUE' ? employee.TOTAL_AMOUNT : 0,
+              online: employee.MODE_OF_DONATION === 'ONLINE' ? employee.TOTAL_AMOUNT : 0,                          
+            }          
+        }
+      }
+      return Object.values(dataElecOrManObj);
+    }
+    tbl_donations_result = groupByModeOfDonation(tbl_donations_result);
+    return tbl_donations_result;
   };
 
   employeeChangePass = async (req) => {

@@ -141,6 +141,10 @@ router
 router
   .route("/get-cons-report")
   .get(adminAuth(), donationController.getConsReport);
+
+router
+  .route("/get-online-report")
+  .get(adminAuth(), donationController.getOnlineReport);
   
 router
   .route("/change-pass")
