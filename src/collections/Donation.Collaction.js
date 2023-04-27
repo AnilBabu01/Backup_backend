@@ -3659,26 +3659,53 @@ userId==1? whereClause =  {
   deleteDonationType = async (req) => {
     let id = req.body.id;
     const userId = req.user.id
-    // let whereClause = {}
-    // userId==1? whereClause =  {
-    //   id: id,
-    //   // modeOfDonation: "4",
-    // }:whereClause= {
-    //   created_by: userId,
-    //   id: id,
-    //   modeOfDonation: "4",
-    // };
-    let deleteReq = await TblDonationTypes.destroy({
+    const donationTypeName = await TblDonationTypes.findOne({
+      where: {
+        id: id,
+      },
+      attributes:['type_hi'],
+      raw:true,
+      nest:true
+    })
+    console.log(donationTypeName, "donation Type nAME")
+    const existsInElecType = await TblelecDonationItem.findOne({
+      where: {
+        type: donationTypeName.type_hi,
+      },
+      raw:true,
+      nest:true
+    })
+
+    const existsInManualType = await TblmanualDonationItem.findOne({
+      where: {
+        type: donationTypeName.type_hi,
+      },
+      raw:true,
+      nest:true
+    })
+    const existsInOnlineType = await TblNewDonation.findOne({
+      where: {
+        TYPE: donationTypeName.type_hi,
+      },
+      raw:true,
+      nest:true
+    })
+
+    if(existsInElecType || existsInManualType || existsInOnlineType){
+      console.log("------------->")
+      return {
+        status: 1,
+        message: "Donation Type is Being Used Somewhere ",
+      };
+    }
+    else{
+
+      let deleteReq = await TblDonationTypes.destroy({
       where: {
         id: id,
       },
     })
       .then(async (res) => {
-        // await TblmanualDonationItem.destroy({
-        //   where: {
-        //     donationId: id,
-        //   },
-        // });
         return {
           status: 1,
           message: "deleted successfully",
@@ -3690,7 +3717,11 @@ userId==1? whereClause =  {
           message: "Something went wrong",
         };
       });
-    return deleteReq;
+      
+      return deleteReq;
+
+    }
+    
   };
 
   dashemployeeTotalOnline = async (req) => {
