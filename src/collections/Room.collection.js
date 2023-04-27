@@ -1,6 +1,6 @@
 const { request, raw } = require("express");
 const httpStatus = require("http-status");
-const { Op, Sequelize, QueryTypes } = require("sequelize");
+const { Op, Sequelize, QueryTypes, where } = require("sequelize");
 const sequelize = require("../db/db-connection");
 const uploadimage = require("../middlewares/imageupload");
 const db = require("../models");
@@ -784,6 +784,7 @@ class RoomCollection {
     }
 
     // Query the check-in and holdin tables to find overlapping bookings and holds
+    console.log(whereclause)
     const conflictingCheckIns = await TblCheckin.findAll({
       where: whereclause,
     });
@@ -1211,7 +1212,9 @@ class RoomCollection {
     AND room.dharmasala_id = '${hotelName}'
 `);
 
+// console.log(results)
     let facilitiesCategory = results?.map((facility) => {
+      // console.log(facility)
       facility.facility_id = JSON.parse(JSON.parse(facility.facility_id));
       facility.category_id = JSON.parse(JSON.parse(facility.category_id));
       return facility;
@@ -1242,7 +1245,8 @@ class RoomCollection {
       to: room.TroomNo,
       ...room,
     }));
-
+// console.log("roomranges");
+//     console.log(roomRanges)
     // Generate a flat list of all room numbers
     const allRoomNumbers = roomRanges.reduce((result, range) => {
       const rangeNumbers = Array.from(
@@ -1251,7 +1255,8 @@ class RoomCollection {
       );
       return [...result, ...rangeNumbers];
     }, []);
-
+    console.log("allroomrnumver");
+// console.log(allRoomNumbers)
     // Find all rooms that are currently checked in or on hold
     const occupiedRooms = await TblCheckin.findAll({
       where: {
@@ -1262,6 +1267,7 @@ class RoomCollection {
           { date: { [Op.lte]: currentDate } },
           { coutDate: { [Op.gte]: currentDate } },
         ],
+        dharmasala : hotelName
       },
     });
 
@@ -1274,24 +1280,27 @@ class RoomCollection {
           { since: { [Op.lte]: currentDate } },
           { remain: { [Op.gte]: currentDate } },
         ],
+        dharmasala : hotelName
       },
     });
 
     // Get room numbers from occupied rooms and on hold rooms
     const occupiedRoomNumbers = occupiedRooms.map((room) => room.RoomNo);
     const onHoldRoomNumbers = onHoldRooms.map((room) => room.RoomNo);
-
+// console.log(occupiedRoomNumbers,onHoldRoomNumbers)
     // Generate a list of available rooms
     const availableRooms = roomRanges.reduce((result, range) => {
       const rangeNumbers = Array.from(
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
       );
+      
       const availableNumbers = rangeNumbers.filter(
         (number) =>
           !occupiedRoomNumbers.includes(number) &&
           !onHoldRoomNumbers.includes(number)
       );
+      // console.log("availableroom",availableNumbers)
       return [
         ...result,
         ...availableNumbers.map((number) => ({

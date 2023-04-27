@@ -125,7 +125,7 @@ class voucherCollection {
       },
     });
 
-    console.log(overlappingVouchers)
+    console.log(overlappingVouchers);
     if (overlappingVouchers.length > 0) {
       return {
         status: false,
@@ -188,34 +188,32 @@ class voucherCollection {
 
   updateVoucher = async (req, res) => {
     let voucher = await this.getVoucherr(req, 1);
-    console.log(voucher)
+    console.log(voucher);
     if (!voucher?.status) {
       return {
         status: false,
         message: "voucher of this user has been exhausted",
       };
     }
-      let voucherNo = voucher.voucher + 1;
-      console.log(voucherNo);
-      let update =
-        voucher?.to == voucherNo
-          ? {
-              voucher: voucherNo,
-              status: constants.voucherStatus.exhausted,
-            }
-          : {
-              voucher: voucherNo,
-            };
-      console.log(update);
-      let result = await TblVoucher.update(update, {
-        where: {
-          id: voucher.id,
-        },
-      });
+    let voucherNo = voucher.voucher + 1;
+    console.log(voucherNo);
+    let update =
+      voucher?.to == voucherNo
+        ? {
+            voucher: voucherNo,
+            status: constants.voucherStatus.exhausted,
+          }
+        : {
+            voucher: voucherNo,
+          };
+    console.log(update);
+    let result = await TblVoucher.update(update, {
+      where: {
+        id: voucher.id,
+      },
+    });
 
-      return result;
-    
-  
+    return result;
   };
 
   checkVoucher = async (req, voucher) => {
@@ -441,6 +439,26 @@ class voucherCollection {
       }
     );
     return Voucher;
+  };
+
+  deleteVoucherRequest = async (req) => {
+    const id = req.body.id;
+    let Voucher;
+    if (id) {
+      Voucher = await TblEmployee.update(
+        {
+          isRequest: false,
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+    }
+    return Voucher
+      ? { status: true, data: Voucher }
+      : { status: false, data: "Please send employee id ad id" };
   };
 
   getrequestVoucher = async (req) => {

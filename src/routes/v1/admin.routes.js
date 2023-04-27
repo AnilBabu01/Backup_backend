@@ -162,6 +162,10 @@ router
 router
   .route("/cancel-each-voucher")
   .post(adminAuth(), donationController.cancelEachVoucher);
+  
+router
+  .route("/delete-voucher")
+  .delete(adminAuth(), voucherController.deleteVoucherRequest);
 router
   .route("/update-employee-prof")
   .put(adminAuth(), userController.employeeProfile);

@@ -267,6 +267,19 @@ const requestVoucher = catchAsync(async (req, res) => {
   });
 });
 
+const deleteVoucherRequest = async (req, res) => {
+  const data = await VoucherCollection.deleteVoucherRequest(req);
+
+  if (!data?.status) {
+    return res.status(200).send(data);
+  }
+
+  res.status(200).send({
+    status: true,
+    data: "Successfully deleted voucher Request!",
+  });
+};
+
 const getrequestVoucher = catchAsync(async (req, res) => {
   const data = await VoucherCollection.getrequestVoucher(req);
 
@@ -402,5 +415,6 @@ module.exports = {
   getVoucherEach,
   NewgetVoucherEach,
   checknewvoucher,
-  updateVoucher
+  updateVoucher,
+  deleteVoucherRequest
 };
