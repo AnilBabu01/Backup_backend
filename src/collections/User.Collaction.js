@@ -191,7 +191,7 @@ class UserCollaction {
     return true;
   };
 
-  updateProfile = async (req) => {
+  updateProfile = async (req,res) => {
     const { name, email, dob, anniversary_date, address } = req.body;
 
     const salt = bcrypt.genSaltSync(12);
@@ -202,7 +202,12 @@ class UserCollaction {
     //------check old pick and remove----
     // ----********--------------------
     const { profile_image = "" } = req.files || "";
-
+    if(!profile_image){
+      res.status(400).send({
+        status: false,
+        message: "Profile Picture is Required",
+      }) 
+    }
     const { sign = ""} = req?.files || ""
 
     let signature;

@@ -222,7 +222,7 @@ const forgotPassword = catchAsync(async (req, res) => {
 });
 
 const updateProfile = catchAsync(async (req, res) => {
-  const update = await userService.profileUpdate(req);
+  const update = await userService.profileUpdate(req,res);
   if (!update) {
     throw new ApiError(httpStatus.NOT_FOUND, "Something wrong!");
   }
