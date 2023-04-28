@@ -1210,10 +1210,11 @@ class RoomCollection {
       fromDate = currentDate
     }
     if(!toDate){
-      toDate = currentDate
+      toDate = new Date()
+      toDate.setDate(toDate.getDate() + 1);
     }
     
-
+// console.log(currentDate)
     const [results] = await sequelize.query(`
   SELECT room.*, dharamsala.image1 AS dharamsalaImage
   FROM tbl_rooms room
@@ -1265,7 +1266,7 @@ class RoomCollection {
       );
       return [...result, ...rangeNumbers];
     }, []);
-    console.log("allroomrnumver");
+//     console.log("allroomrnumver");
 // console.log(allRoomNumbers)
     // Find all rooms that are currently checked in or on hold
     const occupiedRooms = await TblCheckin.findAll({
@@ -1280,7 +1281,6 @@ class RoomCollection {
         dharmasala: hotelName
       },
     });
-
     const onHoldRooms = await TblHoldin.findAll({
       where: {
         RoomNo: {
@@ -1296,7 +1296,7 @@ class RoomCollection {
 
     // Get room numbers from occupied rooms and on hold rooms
     const occupiedRoomNumbers = occupiedRooms.map((room) => room.RoomNo);
-    const onHoldRoomNumbers = onHoldRooms.map((room) => room.RoomNo);
+    const onHoldRoomNumbers = onHoldRooms.map((room) => room.roomNo); 
 // console.log(occupiedRoomNumbers,onHoldRoomNumbers)
     // Generate a list of available rooms
     const availableRooms = roomRanges.reduce((result, range) => {
