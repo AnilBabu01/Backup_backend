@@ -1201,8 +1201,15 @@ class RoomCollection {
   };
 
   getAvailableRoombyCategory = async (req) => {
-    const { category, hotelName } = req.query;
+    const { category, hotelName,fromDate,toDate } = req.query;
     const currentDate = new Date();
+    if(!fromDate ){
+      fromDate = currentDate
+    }
+    if(!toDate){
+      toDate = currentDate
+    }
+    
 
     const [results] = await sequelize.query(`
   SELECT room.*, dharamsala.image1 AS dharamsalaImage
@@ -1264,10 +1271,10 @@ class RoomCollection {
           [Op.in]: allRoomNumbers,
         },
         [Op.and]: [
-          { date: { [Op.lte]: currentDate } },
-          { coutDate: { [Op.gte]: currentDate } },
+          { date: { [Op.lte]: toDate } }, // Check if the check-in date is before or on the "to" date
+          { coutDate: { [Op.gte]: fromDate } }, // Check if the check-out date is after or on the "from" date
         ],
-        dharmasala : hotelName
+        dharmasala: hotelName
       },
     });
 
@@ -1277,8 +1284,8 @@ class RoomCollection {
           [Op.in]: allRoomNumbers,
         },
         [Op.and]: [
-          { since: { [Op.lte]: currentDate } },
-          { remain: { [Op.gte]: currentDate } },
+          { since: { [Op.lte]: toDate } },
+          { remain: { [Op.gte]: fromDate } },
         ],
         dharmasala : hotelName
       },
