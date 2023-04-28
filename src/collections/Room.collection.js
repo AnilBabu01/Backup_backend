@@ -1201,7 +1201,7 @@ class RoomCollection {
   };
 
   getAvailableRoombyCategory = async (req) => {
-    const { category, hotelName,fromDate,toDate } = req.query;
+    let { category, hotelName,fromDate,toDate } = req.query;
     const currentDate = new Date();
     if(!fromDate ){
       fromDate = currentDate
