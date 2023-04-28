@@ -850,34 +850,47 @@ class RoomCollection {
     }
 
     // Generate the list of available rooms with room details
+    // const availableRoomsObj = { availableRooms: [] };
+    let unavailableRooms = []
     facilitiesCategory.forEach((range) => {
+    
       const rangeNumbers = Array.from(
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
       );
-
       // Filter out the unavailable rooms
-      let unavailableRooms = new Set([
-        ...conflictingCheckIns.map((booking) => booking.RoomNo),
-        ...conflictingHolds.map((hold) => hold.roomNo),
-      ]);
-
+      unavailableRooms = [
+        ...conflictingCheckIns.map((booking) => {
+          if (rangeNumbers.includes(booking.RoomNo)) return booking.RoomNo;
+        }),
+        ...conflictingHolds.map((hold) => {
+          if (rangeNumbers.includes(hold.roomNo)) {
+            return hold.roomNo;
+          }
+        }),
+      ].filter((roomNo) => roomNo !== undefined);
+    
       const availableRoomNumbers = rangeNumbers.filter(
-        (roomNumber) => !unavailableRooms.has(roomNumber)
+        (roomNumber) => !unavailableRooms.includes(roomNumber)
       );
-      unavailableRooms = [...unavailableRooms]
-        availableRoomsObj.availableRooms.push({
-          category_name:range.category_name[0],
-          total_rooms:rangeNumbers.length,
-          available_rooms:availableRoomNumbers.length?availableRoomNumbers.length:0,
-          available_room_numbers:availableRoomNumbers,
-          already_booked:unavailableRooms.length?unavailableRooms.length:0,
-          already_booked_room_numbers:unavailableRooms,
-          facilities:range.facility_name
-        })
+    
+      // const unavailableRooms = [...unavailableRoomsSet];
+      // unavailableRoomsSet.clear();
+      availableRoomsObj.availableRooms.push({
+        category_name: range.category_name[0],
+        total_rooms: rangeNumbers.length,
+        available_rooms: availableRoomNumbers.length ? availableRoomNumbers.length : 0,
+        available_room_numbers: availableRoomNumbers,
+        already_booked: unavailableRooms.length ? unavailableRooms.length : 0,
+        already_booked_room_numbers: unavailableRooms,
+        facilities: range.facility_name,
+      });
+      unavailableRooms = [];
     });
-
+    
+    
     return availableRoomsObj;
+    
   };
   // getAvailableRoom = async (req) => {
   //   const {
