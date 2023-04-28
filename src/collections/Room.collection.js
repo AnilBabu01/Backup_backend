@@ -856,7 +856,7 @@ class RoomCollection {
       const rangeNumbers = Array.from(
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
-      );   
+      );
 
       // Filter out the unavailable rooms
       const unavailableRooms = new Set([
@@ -869,8 +869,11 @@ class RoomCollection {
 
         availableRoomsObj.availableRooms.push({
           category_name:range.category_name[0],
+          total_rooms:rangeNumbers.length,
           available_rooms:availableRoomNumbers.length?availableRoomNumbers.length:0,
+          available_room_numbers:availableRoomNumbers,
           already_booked:unavailableRooms.length?unavailableRooms.length:0,
+          already_booked_room_numbers:unavailableRooms,
           facilities:range.facility_name
         })
     });
