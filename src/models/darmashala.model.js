@@ -33,4 +33,8 @@ const Dharmasala = sequelize.define(tbl.Tbl_DHARAMSALA, {
 
 });
 
+Dharmasala.associate = (models) => {
+  Dharmasala.hasMany(models.tbl_rooms, { foreignKey: 'dharmasalaId' });
+};
+
 module.exports = Dharmasala;

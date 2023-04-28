@@ -756,9 +756,10 @@ class RoomCollection {
     } = req.body;
 
     // Convert the date and time strings to JavaScript Date objects
-    checkinDate = new Date(checkinDate);
-    checkoutDate = new Date(checkoutDate);
-
+    // checkinDate = new Date(checkinDate);
+    // checkoutDate = new Date(checkoutDate);
+    checkinDate = checkinTime ? new Date(checkinDate + ' ' + checkinTime) : new Date(checkinDate);
+    checkoutDate = checkoutTime ? new Date(checkoutDate + ' ' + checkoutTime) : new Date(checkoutDate);
     let whereclause = {};
 
     if (hotelName) {
@@ -767,14 +768,14 @@ class RoomCollection {
 
     if (checkoutDate && checkinDate) {
       whereclause.date = { [Op.lt]: checkoutDate };
-      whereclause.time = { [Op.gt]: checkinDate };
+      whereclause.coutDate = { [Op.gt]: checkinDate };
 
-      if (checkoutTime && checkinTime) {
-        whereclause[Op.or] = [
-          { date: checkoutDate, time: { [Op.lte]: checkoutTime } },
-          { date: checkinDate, time: { [Op.gte]: checkinTime } },
-        ];
-      }
+      // if (checkoutTime && checkinTime) {
+      //   whereclause[Op.or] = [
+      //     { date: checkoutDate, time: { [Op.lte]: checkoutTime } },
+      //     { coutDate: checkinDate, coutTime: { [Op.gte]: checkinTime } },
+      //   ];
+      // }
     }
 
     const replacements = { dharmasala_id: hotelName };
@@ -784,7 +785,7 @@ class RoomCollection {
     }
 
     // Query the check-in and holdin tables to find overlapping bookings and holds
-    console.log(whereclause)
+
     const conflictingCheckIns = await TblCheckin.findAll({
       where: whereclause,
     });
@@ -792,14 +793,11 @@ class RoomCollection {
     const conflictingHolds = await TblHoldin.findAll({
       where: {
         dharmasala: hotelName,
-        since: { [Op.lt]: checkoutDate },
         remain: { [Op.gt]: checkinDate },
-        [Op.or]: [
-          { since: checkoutDate, sinceTime: { [Op.lte]: checkoutTime } },
-          { remain: checkinDate, remainTime: { [Op.gte]: checkinTime } },
-        ],
+        since: { [Op.lt]: checkoutDate },
       },
-    });
+    }); 
+
 
     // Retrieve the room ranges from the database
     const roomRanges = await TblRoom.sequelize.query(
@@ -859,14 +857,15 @@ class RoomCollection {
       );
 
       // Filter out the unavailable rooms
-      const unavailableRooms = new Set([
-        ...conflictingCheckIns.map((booking) => booking.roomNumber),
-        ...conflictingHolds.map((hold) => hold.roomNumber),
+      let unavailableRooms = new Set([
+        ...conflictingCheckIns.map((booking) => booking.RoomNo),
+        ...conflictingHolds.map((hold) => hold.roomNo),
       ]);
+
       const availableRoomNumbers = rangeNumbers.filter(
         (roomNumber) => !unavailableRooms.has(roomNumber)
       );
-
+      unavailableRooms = [...unavailableRooms]
         availableRoomsObj.availableRooms.push({
           category_name:range.category_name[0],
           total_rooms:rangeNumbers.length,
@@ -880,6 +879,178 @@ class RoomCollection {
 
     return availableRoomsObj;
   };
+  // getAvailableRoom = async (req) => {
+  //   const {
+  //     hotelName,
+  //     checkinDate,
+  //     checkinTime,
+  //     checkoutDate,
+  //     checkoutTime,
+  //     numAdults,
+  //     numChildren,
+  //     numRooms,
+  //     roomType,
+  //   } = req.body;
+  
+    // const checkinDateTime = new Date(checkinDate + ' ' + checkinTime);
+    // const checkoutDateTime = new Date(checkoutDate + ' ' + checkoutTime);
+  
+  //   const roomQueryOptions = {
+  //     where: { dharmasala_id: hotelName },
+  //     include: [
+  //       { model: TblDharmasal },
+  //       { model: TblRoomCategory },
+  //       { model: TblFacility },
+  //     ],
+  //     order: [['FroomNo', 'ASC']],
+  //   };
+  
+  //   if (roomType) {
+  //     roomQueryOptions.where.roomType = roomType;
+  //   }
+  
+  //   const roomRanges = await TblRoom.findAll(roomQueryOptions);
+  
+  //   const availableRooms = [];
+  
+  //   for (let range of roomRanges) {
+  //     const roomNumbers = Array.from(
+  //       { length: range.TroomNo - range.FroomNo + 1 },
+  //       (_, i) => range.FroomNo + i
+  //     );
+  
+  //     const conflictingCheckIns = await TblCheckin.findAll({
+  //       where: {
+  //         dharmasala: hotelName,
+  //         roomNumber: { [Op.in]: roomNumbers },
+  //         checkoutDateTime: { [Op.gt]: checkinDateTime },
+  //         checkinDateTime: { [Op.lt]: checkoutDateTime },
+  //       },
+  //     });
+  
+  //     const conflictingHolds = await TblHoldin.findAll({
+  //       where: {
+  //         dharmasala: hotelName,
+  //         roomNumber: { [Op.in]: roomNumbers },
+  //         checkoutDateTime: { [Op.gt]: checkinDateTime },
+  //         checkinDateTime: { [Op.lt]: checkoutDateTime },
+  //       },
+  //     });
+  
+  //     const unavailableRoomNumbers = new Set([
+  //       ...conflictingCheckIns.map((booking) => booking.roomNumber),
+  //       ...conflictingHolds.map((hold) => hold.roomNumber),
+  //     ]);
+  
+  //     const availableRoomNumbers = roomNumbers.filter(
+  //       (roomNumber) => !unavailableRoomNumbers.has(roomNumber)
+  //     );
+  
+  //     if (availableRoomNumbers.length) {
+  //       availableRooms.push({
+  //         roomType: range.roomType,
+  //         category: range.tbl_room_category.name,
+  //         totalRooms: roomNumbers.length,
+  //         availableRooms: availableRoomNumbers.length,
+  //         availableRoomNumbers: availableRoomNumbers,
+  //         rate: range.Rate,
+  //         facilities: range.tbl_facilities.map((f) => f.name),
+  //         dharamshala: range.tbl_dharmasala.name,
+  //         image: range.tbl_dharmasala.image1,
+  //       });
+  //     }
+  //   }
+  
+  //   return availableRooms;
+  // };
+  // getAvailableRoom = async (req) => {
+  //   const {
+  //     hotelName,
+  //     checkinDate,
+  //     checkinTime,
+  //     checkoutDate,
+  //     checkoutTime,
+  //     numAdults,
+  //     numChildren,
+  //     numRooms,
+  //     roomType,
+  //   } = req.body;
+  
+  //   const checkinDateTime = new Date(checkinDate + ' ' + checkinTime);
+  //   const checkoutDateTime = new Date(checkoutDate + ' ' + checkoutTime);
+  
+  //   const roomQueryOptions = {
+  //     where: { dharmasala_id: hotelName },
+  //     include: [
+  //       { model: TblDharmasal },
+  //       { model: TblRoomCategory },
+  //       { model: TblFacility },
+  //     ],
+  //     order: [['FroomNo', 'ASC']],
+  //   };
+  
+  //   if (roomType) {
+  //     roomQueryOptions.where.roomType = roomType;
+  //   }
+  
+  //   const roomRanges = await TblRoom.findAll(roomQueryOptions);
+  
+  //   const conflictingBookings = await TblCheckin.findAll({
+  //     where: {
+  //       dharmasala: hotelName,
+  //       roomNumber: { [Op.in]: roomRanges.map(range => Array.from(
+  //         { length: range.TroomNo - range.FroomNo + 1 },
+  //         (_, i) => range.FroomNo + i
+  //       )) },
+  //       checkoutDateTime: { [Op.gt]: checkinDateTime },
+  //       checkinDateTime: { [Op.lt]: checkoutDateTime },
+  //     },
+  //   });
+  
+  //   const conflictingHolds = await TblHoldin.findAll({
+  //     where: {
+  //       dharmasala: hotelName,
+  //       roomNumber: { [Op.in]: roomRanges.map(range => Array.from(
+  //         { length: range.TroomNo - range.FroomNo + 1 },
+  //         (_, i) => range.FroomNo + i
+  //       )) },
+  //       checkoutDateTime: { [Op.gt]: checkinDateTime },
+  //       checkinDateTime: { [Op.lt]: checkoutDateTime },
+  //     },
+  //   });
+  
+  //   const unavailableRoomNumbers = new Set([    ...conflictingBookings.map((booking) => booking.roomNumber),    ...conflictingHolds.map((hold) => hold.roomNumber),  ]);
+  
+  //   const availableRooms = roomRanges.flatMap(range => {
+  //     const roomNumbers = Array.from(
+  //       { length: range.TroomNo - range.FroomNo + 1 },
+  //       (_, i) => range.FroomNo + i
+  //     );
+  
+  //     const availableRoomNumbers = roomNumbers.filter(
+  //       (roomNumber) => !unavailableRoomNumbers.has(roomNumber)
+  //     );
+  
+  //     if (availableRoomNumbers.length) {
+  //       return {
+  //         roomType: range.roomType,
+  //         category: range.tbl_room_category.name,
+  //         totalRooms: roomNumbers.length,
+  //         availableRooms: availableRoomNumbers.length,
+  //         availableRoomNumbers: availableRoomNumbers,
+  //         rate: range.Rate,
+  //         facilities: range.tbl_facilities.map((f) => f.name),
+  //         dharamshala: range.tbl_dharmasala.name,
+  //         image: range.tbl_dharmasala.image1,
+  //       };
+  //     } else {
+  //       return [];
+  //     }
+  //   });
+  
+  //   return availableRooms;
+  // };
+  
 
   //ROOM CATEGORIES
 
