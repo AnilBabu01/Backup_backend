@@ -32,7 +32,7 @@ class RoomCollection {
     let { coutDate, coutTime, date, time, dharmasala } = req.body;
     const roomNo = parseInt(req.body.RoomNo);
 
-    
+
     const existingBooking = await TblCheckin.findOne({
       where: {
         RoomNo: roomNo,
@@ -79,7 +79,7 @@ class RoomCollection {
       Date.parse(`${coutDate}T${coutTime}`)
     );
 
-    
+
 
     if (userCheckoutDateTime.getTime() > maxCheckoutDateTime.getTime()) {
       throw new ApiError(
@@ -97,7 +97,7 @@ class RoomCollection {
         };
       })
       .catch((err) => {
-    
+
         result = {
           status: false,
           message: "Room failed to book",
@@ -844,12 +844,19 @@ class RoomCollection {
       })
     );
 
+    const availableRoomsObj = {
+      dharamshala_img: facilitiesCategory[0].dharmasala.dataValues.image1,
+      dharamshala_name: facilitiesCategory[0].dharmasala.dataValues.name,
+      dharamshala_desciption: facilitiesCategory[0].dharmasala.dataValues.desc,
+      availableRooms:[]
+    }
+
     // Generate the list of available rooms with room details
-    const availableRooms = facilitiesCategory.reduce((result, range) => {
+    facilitiesCategory.forEach((range) => {
       const rangeNumbers = Array.from(
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
-      );
+      );   
 
       // Filter out the unavailable rooms
       const unavailableRooms = new Set([
@@ -860,22 +867,15 @@ class RoomCollection {
         (roomNumber) => !unavailableRooms.has(roomNumber)
       );
 
-      // Add room details to the list of available rooms
-      const availableRoomsInThisRange = availableRoomNumbers.map(
-        (roomNumber) => ({
-          roomNumber,
-          ...range,
-          dharmasala: {
-            name: range.name,
-            desc: range.desc,
-            image: range.image1,
-          },
+        availableRoomsObj.availableRooms.push({
+          category_name:range.category_name[0],
+          available_rooms:availableRoomNumbers.length?availableRoomNumbers.length:0,
+          already_booked:unavailableRooms.length?unavailableRooms.length:0,
+          facilities:range.facility_name
         })
-      );
-      return result.concat(availableRoomsInThisRange);
-    }, []);
+    });
 
-    return availableRooms;
+    return availableRoomsObj;
   };
 
   //ROOM CATEGORIES
@@ -1341,7 +1341,7 @@ class RoomCollection {
     return result;
   };
 
-  createBookingPara = async (req) => {};
+  createBookingPara = async (req) => { };
 }
 
 module.exports = new RoomCollection();
