@@ -847,6 +847,7 @@ class RoomCollection {
       dharamshala_img: facilitiesCategory[0].dharmasala.dataValues.image1,
       dharamshala_name: facilitiesCategory[0].dharmasala.dataValues.name,
       dharamshala_desciption: facilitiesCategory[0].dharmasala.dataValues.desc,
+      dharmasala_id :  facilitiesCategory[0].dharmasala.dataValues.dharmasala_id,
       availableRooms:[]
     }
 let i = 0;
@@ -854,6 +855,7 @@ let i = 0;
     // const availableRoomsObj = { availableRooms: [] };
     let unavailableRooms = []
     facilitiesCategory.forEach((range) => {
+      console.log(range)
       const rangeNumbers = Array.from(
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
@@ -883,6 +885,7 @@ let i = 0;
       // unavailableRoomsSet.clear();
       availableRoomsObj.availableRooms.push({
         category_name: range.category_name[0],
+        category_id : range.category_id[0],
         total_rooms: rangeNumbers.length,
         available_rooms: availableRoomNumbers.length ? availableRoomNumbers.length : 0,
         available_room_numbers: availableRoomNumbers,
