@@ -1380,12 +1380,13 @@ userId==1? whereClause =  {
     });
     let creator = await TblEmployees.findOne({
       where: { id: data.created_by },
-      attributes: ["id", "Username"],
+      attributes: ["id", "Username","signature"],
     });
   
     // Add the creator's name to the result object
 
     data.dataValues.creator_name = creator;
+    // data.dataValues.signature = creator.signature;
     return data;
   }catch(error){
     throw error

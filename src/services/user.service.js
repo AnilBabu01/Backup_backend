@@ -148,8 +148,8 @@ const forgotPass = async (req) => {
   return data;
 };
 
-const profileUpdate = async (req) => {
-  const update = await UserCollection.updateProfile(req);
+const profileUpdate = async (req,res) => {
+  const update = await UserCollection.updateProfile(req,res);
   return update;
 };
 
