@@ -815,6 +815,7 @@ class RoomCollection {
         groupBy: ["dharmasala_id"],
       }
     );
+    console.log(roomRanges)
 
     let facilitiesCategory = roomRanges?.map((facility) => {
       facility.facility_id = JSON.parse(JSON.parse(facility.facility_id));
@@ -848,12 +849,11 @@ class RoomCollection {
       dharamshala_desciption: facilitiesCategory[0].dharmasala.dataValues.desc,
       availableRooms:[]
     }
-
+let i = 0;
     // Generate the list of available rooms with room details
     // const availableRoomsObj = { availableRooms: [] };
     let unavailableRooms = []
     facilitiesCategory.forEach((range) => {
-    
       const rangeNumbers = Array.from(
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
@@ -873,7 +873,12 @@ class RoomCollection {
       const availableRoomNumbers = rangeNumbers.filter(
         (roomNumber) => !unavailableRooms.includes(roomNumber)
       );
-    
+    // let roomImages = {
+    //   roomImage1: roomRanges[i].roomImage1,
+    //   roomImage2: roomRanges[i].roomImage2,
+    //   roomImage3: roomRanges[i].roomImage3,
+    //   roomImage4: roomRanges[i].roomImage4,
+    // };
       // const unavailableRooms = [...unavailableRoomsSet];
       // unavailableRoomsSet.clear();
       availableRoomsObj.availableRooms.push({
@@ -884,7 +889,14 @@ class RoomCollection {
         already_booked: unavailableRooms.length ? unavailableRooms.length : 0,
         already_booked_room_numbers: unavailableRooms,
         facilities: range.facility_name,
+        roomImages : {
+          roomImage1: roomRanges[i].roomImage1,
+          roomImage2: roomRanges[i].roomImage2,
+          roomImage3: roomRanges[i].roomImage3,
+          roomImage4: roomRanges[i].roomImage4,
+        }
       });
+      i++;
       unavailableRooms = [];
     });
     
