@@ -24,88 +24,182 @@ const TblDharmasal = db.dharmashala;
 
 class RoomCollection {
   roomCheckin = async (req, id) => {
-    let result;
+    let result = [];
     req.body.booking_id = id;
     let booked_by = req.user.id;
 
     req.body.booked_by = booked_by;
-    let { coutDate, coutTime, date, time, dharmasala } = req.body;
-    const roomNo = parseInt(req.body.RoomNo);
+    let { coutDate, coutTime, date, time, dharmasala, roomList } = req.body;
+  
+    let allRoomsAvailable = true;
 
-
-    const existingBooking = await TblCheckin.findOne({
-      where: {
-        RoomNo: roomNo,
-        dharmasala: dharmasala,
-        [Op.or]: [
-          {
-            coutDate: {
-              [Op.gt]: date // check-out date is after desired check-in date
-            }
+    for (const roomNo of roomList) {
+      // console.log("r--------->",roomNo)
+      req.body.RoomNo = roomNo;
+      try {
+        const existingBooking = await TblCheckin.findOne({
+          where: {
+            RoomNo: parseInt(roomNo),
+            dharmasala: dharmasala,
+            [Op.or]: [
+              {
+                coutDate: {
+                  [Op.gt]: date, // check-out date is after desired check-in date
+                },
+              },
+              {
+                coutDate: {
+                  [Op.eq]: date, // check-out date is equal to desired check-in date
+                },
+                coutTime: {
+                  [Op.gt]: time, // check-out time is after desired check-in time
+                },
+              },
+            ],
           },
-          {
-            coutDate: {
-              [Op.eq]: date // check-out date is equal to desired check-in date
-            },
-            coutTime: {
-              [Op.gt]: time // check-out time is after desired check-in time
-            }
-          }
-        ]
-      },
-      raw: true,
-    });
+          raw: true,
+        });
 
-    if (existingBooking) {
-      throw new ApiError(httpStatus.CONFLICT, "The Room has already in use");
-    }
+        if (existingBooking) {
+          allRoomsAvailable = false;
+          console.log(`Room ${roomNo} is not available`);
+          break; // exit the loop if any room is not available
+        }
 
-    let perDayhour = await TblRoom.findOne({
-      where: {
-        FroomNo: { [Op.lte]: roomNo },
-        TroomNo: { [Op.gte]: roomNo },
-      },
-      raw: true,
-    });
+        let perDayhour = await TblRoom.findOne({
+          where: {
+            FroomNo: { [Op.lte]: roomNo },
+            TroomNo: { [Op.gte]: roomNo },
+          },
+          raw: true,
+        });
 
-    perDayhour = perDayhour.coTime;
-    const maxDurationInHours = 3 * perDayhour;
-    const maxDurationInMs = maxDurationInHours * 60 * 60 * 1000;
-    const checkinDateTime = new Date(`${date}T${time}`);
-    const maxCheckoutDateTime = new Date(
-      checkinDateTime.getTime() + maxDurationInMs
-    );
-    const userCheckoutDateTime = new Date(
-      Date.parse(`${coutDate}T${coutTime}`)
-    );
+        perDayhour = perDayhour.coTime;
+        const maxDurationInHours = 3 * perDayhour;
+        const maxDurationInMs = maxDurationInHours * 60 * 60 * 1000;
+        const checkinDateTime = new Date(`${date}T${time}`);
+        const maxCheckoutDateTime = new Date(
+          checkinDateTime.getTime() + maxDurationInMs
+        );
+        const userCheckoutDateTime = new Date(
+          Date.parse(`${coutDate}T${coutTime}`)
+        );
 
+        if (userCheckoutDateTime.getTime() > maxCheckoutDateTime.getTime()) {
+          allRoomsAvailable = false;
+          console.log(`Room ${roomNo} is not available for the given duration`);
+          break; // exit the loop if any room is not available for the given duration
+        }
 
-
-    if (userCheckoutDateTime.getTime() > maxCheckoutDateTime.getTime()) {
-      throw new ApiError(
-        httpStatus.CONFLICT,
-        "Checkout date and time exceeds the maximum duration for this booking 3 days is only allowed to book at one time"
-      );
-    }
-
-    let room = await TblCheckin.create(req.body)
-      .then((res) => {
-        result = {
-          status: true,
-          message: "Room Booked successfully",
-          data: res,
-        };
-      })
-      .catch((err) => {
-
-        result = {
+        let room = await TblCheckin.create(req.body);
+        result.push(room);
+      } catch (error) {
+        return {
           status: false,
           message: "Room failed to book",
+          data: error?.message,
         };
-      });
+      }
+    }
 
-    return result || room;
+    if (!allRoomsAvailable) {
+      // delete any bookings that were made before encountering an unavailable room
+      result.forEach(async (booking) => {
+        await TblCheckin.destroy({ where: { id: booking.id } });
+      });
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        "One or more rooms are unavailable"
+      );
+    }
+    return {
+      status: true,
+      message: "Room booked successfully!!",
+      data: result,
+    };
   };
+
+  // roomCheckinOld = async (req, id) => {
+  //   let result;
+  //   req.body.booking_id = id;
+  //   let booked_by = req.user.id;
+
+  //   req.body.booked_by = booked_by;
+  //   let { coutDate, coutTime, date, time, dharmasala, categoryId, nRoom } =
+  //     req.body;
+  //   const roomNo = parseInt(req.body.RoomNo);
+  //   console.log(req.body);
+
+  //   const existingBooking = await TblCheckin.findOne({
+  //     where: {
+  //       RoomNo: roomNo,
+  //       dharmasala: dharmasala,
+  //       [Op.or]: [
+  //         {
+  //           coutDate: {
+  //             [Op.gt]: date, // check-out date is after desired check-in date
+  //           },
+  //         },
+  //         {
+  //           coutDate: {
+  //             [Op.eq]: date, // check-out date is equal to desired check-in date
+  //           },
+  //           coutTime: {
+  //             [Op.gt]: time, // check-out time is after desired check-in time
+  //           },
+  //         },
+  //       ],
+  //     },
+  //     raw: true,
+  //   });
+
+  //   if (existingBooking) {
+  //     throw new ApiError(httpStatus.CONFLICT, "The Room has already in use");
+  //   }
+
+  //   let perDayhour = await TblRoom.findOne({
+  //     where: {
+  //       FroomNo: { [Op.lte]: roomNo },
+  //       TroomNo: { [Op.gte]: roomNo },
+  //     },
+  //     raw: true,
+  //   });
+
+  //   perDayhour = perDayhour.coTime;
+  //   const maxDurationInHours = 3 * perDayhour;
+  //   const maxDurationInMs = maxDurationInHours * 60 * 60 * 1000;
+  //   const checkinDateTime = new Date(`${date}T${time}`);
+  //   const maxCheckoutDateTime = new Date(
+  //     checkinDateTime.getTime() + maxDurationInMs
+  //   );
+  //   const userCheckoutDateTime = new Date(
+  //     Date.parse(`${coutDate}T${coutTime}`)
+  //   );
+
+  //   if (userCheckoutDateTime.getTime() > maxCheckoutDateTime.getTime()) {
+  //     throw new ApiError(
+  //       httpStatus.CONFLICT,
+  //       "Checkout date and time exceeds the maximum duration for this booking 3 days is only allowed to book at one time"
+  //     );
+  //   }
+
+  //   let room = await TblCheckin.create(req.body)
+  //     .then((res) => {
+  //       result = {
+  //         status: true,
+  //         message: "Room Booked successfully",
+  //         data: res,
+  //       };
+  //     })
+  //     .catch((err) => {
+  //       result = {
+  //         status: false,
+  //         message: "Room failed to book",
+  //       };
+  //     });
+
+  //   return result || room;
+  // };
 
   getCheckin = async () => {
     const query = `
@@ -785,7 +879,6 @@ class RoomCollection {
     }
 
     // Query the check-in and holdin tables to find overlapping bookings and holds
-
     const conflictingCheckIns = await TblCheckin.findAll({
       where: whereclause,
     });
@@ -1403,10 +1496,10 @@ let i = 0;
   };
 
   getAvailableRoombyCategory = async (req) => {
-    let { category, hotelName,fromDate,toDate } = req.query;
+    let { category, hotelName, fromDate, toDate } = req.query;
     const currentDate = new Date();
-    if(!fromDate ){
-      fromDate = currentDate
+    if (!fromDate) {
+      fromDate = currentDate;
     }
     if(!toDate){
       toDate = new Date()
@@ -1422,7 +1515,7 @@ let i = 0;
     AND room.dharmasala_id = '${hotelName}'
 `);
 
-// console.log(results)
+    // console.log(results)
     let facilitiesCategory = results?.map((facility) => {
       // console.log(facility)
       facility.facility_id = JSON.parse(JSON.parse(facility.facility_id));
@@ -1455,8 +1548,8 @@ let i = 0;
       to: room.TroomNo,
       ...room,
     }));
-// console.log("roomranges");
-//     console.log(roomRanges)
+    // console.log("roomranges");
+    //     console.log(roomRanges)
     // Generate a flat list of all room numbers
     const allRoomNumbers = roomRanges.reduce((result, range) => {
       const rangeNumbers = Array.from(
@@ -1477,7 +1570,7 @@ let i = 0;
           { date: { [Op.lte]: toDate } }, // Check if the check-in date is before or on the "to" date
           { coutDate: { [Op.gte]: fromDate } }, // Check if the check-out date is after or on the "from" date
         ],
-        dharmasala: hotelName
+        dharmasala: hotelName,
       },
     });
     const onHoldRooms = await TblHoldin.findAll({
@@ -1489,7 +1582,7 @@ let i = 0;
           { since: { [Op.lte]: toDate } },
           { remain: { [Op.gte]: fromDate } },
         ],
-        dharmasala : hotelName
+        dharmasala: hotelName,
       },
     });
 
@@ -1503,7 +1596,7 @@ let i = 0;
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
       );
-      
+
       const availableNumbers = rangeNumbers.filter(
         (number) =>
           !occupiedRoomNumbers.includes(number) &&
