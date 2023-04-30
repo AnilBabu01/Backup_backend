@@ -30,7 +30,7 @@ class RoomCollection {
 
     req.body.booked_by = booked_by;
     let { coutDate, coutTime, date, time, dharmasala, roomList } = req.body;
-  
+
     let allRoomsAvailable = true;
 
     for (const roomNo of roomList) {
@@ -73,7 +73,14 @@ class RoomCollection {
           },
           raw: true,
         });
-
+        let amount = {
+          roomAmount: perDayhour.Rate,
+        };
+        if (req.body.modeOfBooking) {
+          amount.advanceAmount = perDayhour.advance;
+        } else {
+          amount.advanceAmount = 0;
+        }
         perDayhour = perDayhour.coTime;
         const maxDurationInHours = 3 * perDayhour;
         const maxDurationInMs = maxDurationInHours * 60 * 60 * 1000;
@@ -91,7 +98,7 @@ class RoomCollection {
           break; // exit the loop if any room is not available for the given duration
         }
 
-        let room = await TblCheckin.create(req.body);
+        let room = await TblCheckin.create({ ...req.body, ...amount });
         result.push(room);
       } catch (error) {
         return {
@@ -117,6 +124,67 @@ class RoomCollection {
       message: "Room booked successfully!!",
       data: result,
     };
+  };
+
+  // Checkout API endpoint
+  roomCheckOut = async (req) => {
+    const id = req.body.id;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { id: id } });
+
+      if (!room) {
+        throw new Error({ error: "Room not found" });
+      }
+
+      const checkoutDate = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate)
+        : new Date();
+      const checkoutTime = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate).toLocaleTimeString()
+        : new Date().toLocaleTimeString();
+
+      room.coutDate = checkoutDate;
+      room.coutTime = checkoutTime;
+
+      room.advanceAmount =
+        room.advanceAmount - req.body.advanceAmount > 0
+          ? room.advanceAmount - req.body.advanceAmount
+          : 0;
+
+      await room.save();
+
+      return {
+        status: true,
+        message: "Room checked out successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Room failed to checkout",
+        data: error?.message,
+      };
+    }
+  };
+
+  getCheckinNew = async (req) => {
+    const currentDate = new Date();
+    const currentRooms = await TblCheckin.findAll({
+      where: {
+        coutDate: {
+          [Op.gt]: currentDate,
+        },
+        date: {
+          [Sequelize.Op.lte]: currentDate,
+        },
+        time: {
+          [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
+        },
+      },
+    });
+    return currentRooms;
   };
 
   // roomCheckinOld = async (req, id) => {
@@ -852,8 +920,12 @@ class RoomCollection {
     // Convert the date and time strings to JavaScript Date objects
     // checkinDate = new Date(checkinDate);
     // checkoutDate = new Date(checkoutDate);
-    checkinDate = checkinTime ? new Date(checkinDate + ' ' + checkinTime) : new Date(checkinDate);
-    checkoutDate = checkoutTime ? new Date(checkoutDate + ' ' + checkoutTime) : new Date(checkoutDate);
+    checkinDate = checkinTime
+      ? new Date(checkinDate + " " + checkinTime)
+      : new Date(checkinDate);
+    checkoutDate = checkoutTime
+      ? new Date(checkoutDate + " " + checkoutTime)
+      : new Date(checkoutDate);
     let whereclause = {};
 
     if (hotelName) {
@@ -889,8 +961,7 @@ class RoomCollection {
         remain: { [Op.gt]: checkinDate },
         since: { [Op.lt]: checkoutDate },
       },
-    }); 
-
+    });
 
     // Retrieve the room ranges from the database
     const roomRanges = await TblRoom.sequelize.query(
@@ -908,7 +979,7 @@ class RoomCollection {
         groupBy: ["dharmasala_id"],
       }
     );
-    console.log(roomRanges)
+    // console.log(roomRanges)
 
     let facilitiesCategory = roomRanges?.map((facility) => {
       facility.facility_id = JSON.parse(JSON.parse(facility.facility_id));
@@ -940,15 +1011,15 @@ class RoomCollection {
       dharamshala_img: facilitiesCategory[0].dharmasala.dataValues.image1,
       dharamshala_name: facilitiesCategory[0].dharmasala.dataValues.name,
       dharamshala_desciption: facilitiesCategory[0].dharmasala.dataValues.desc,
-      dharmasala_id :  facilitiesCategory[0].dharmasala.dataValues.dharmasala_id,
-      availableRooms:[]
-    }
-let i = 0;
+      dharmasala_id: facilitiesCategory[0].dharmasala.dataValues.dharmasala_id,
+      availableRooms: [],
+    };
+    let i = 0;
     // Generate the list of available rooms with room details
     // const availableRoomsObj = { availableRooms: [] };
-    let unavailableRooms = []
+    let unavailableRooms = [];
     facilitiesCategory.forEach((range) => {
-      console.log(range)
+      console.log(range);
       const rangeNumbers = Array.from(
         { length: range.to - range.from + 1 },
         (_, i) => i + range.from
@@ -964,41 +1035,35 @@ let i = 0;
           }
         }),
       ].filter((roomNo) => roomNo !== undefined);
-    
+
       const availableRoomNumbers = rangeNumbers.filter(
         (roomNumber) => !unavailableRooms.includes(roomNumber)
       );
-    // let roomImages = {
-    //   roomImage1: roomRanges[i].roomImage1,
-    //   roomImage2: roomRanges[i].roomImage2,
-    //   roomImage3: roomRanges[i].roomImage3,
-    //   roomImage4: roomRanges[i].roomImage4,
-    // };
-      // const unavailableRooms = [...unavailableRoomsSet];
-      // unavailableRoomsSet.clear();
+
       availableRoomsObj.availableRooms.push({
         category_name: range.category_name[0],
-        category_id : range.category_id[0],
+        category_id: range.category_id[0],
         total_rooms: rangeNumbers.length,
-        available_rooms: availableRoomNumbers.length ? availableRoomNumbers.length : 0,
+        available_rooms: availableRoomNumbers.length
+          ? availableRoomNumbers.length
+          : 0,
         available_room_numbers: availableRoomNumbers,
         already_booked: unavailableRooms.length ? unavailableRooms.length : 0,
         already_booked_room_numbers: unavailableRooms,
         facilities: range.facility_name,
-        roomImages : {
-          roomImage1: roomRanges[i].roomImage1,
-          roomImage2: roomRanges[i].roomImage2,
-          roomImage3: roomRanges[i].roomImage3,
-          roomImage4: roomRanges[i].roomImage4,
-        }
+        roomDetails: roomRanges[i],
+        // roomImages : {
+        //   roomImage1: roomRanges[i].roomImage1,
+        //   roomImage2: roomRanges[i].roomImage2,
+        //   roomImage3: roomRanges[i].roomImage3,
+        //   roomImage4: roomRanges[i].roomImage4,
+        // }
       });
       i++;
       unavailableRooms = [];
     });
-    
-    
+
     return availableRoomsObj;
-    
   };
   // getAvailableRoom = async (req) => {
   //   const {
@@ -1012,10 +1077,10 @@ let i = 0;
   //     numRooms,
   //     roomType,
   //   } = req.body;
-  
-    // const checkinDateTime = new Date(checkinDate + ' ' + checkinTime);
-    // const checkoutDateTime = new Date(checkoutDate + ' ' + checkoutTime);
-  
+
+  // const checkinDateTime = new Date(checkinDate + ' ' + checkinTime);
+  // const checkoutDateTime = new Date(checkoutDate + ' ' + checkoutTime);
+
   //   const roomQueryOptions = {
   //     where: { dharmasala_id: hotelName },
   //     include: [
@@ -1025,21 +1090,21 @@ let i = 0;
   //     ],
   //     order: [['FroomNo', 'ASC']],
   //   };
-  
+
   //   if (roomType) {
   //     roomQueryOptions.where.roomType = roomType;
   //   }
-  
+
   //   const roomRanges = await TblRoom.findAll(roomQueryOptions);
-  
+
   //   const availableRooms = [];
-  
+
   //   for (let range of roomRanges) {
   //     const roomNumbers = Array.from(
   //       { length: range.TroomNo - range.FroomNo + 1 },
   //       (_, i) => range.FroomNo + i
   //     );
-  
+
   //     const conflictingCheckIns = await TblCheckin.findAll({
   //       where: {
   //         dharmasala: hotelName,
@@ -1048,7 +1113,7 @@ let i = 0;
   //         checkinDateTime: { [Op.lt]: checkoutDateTime },
   //       },
   //     });
-  
+
   //     const conflictingHolds = await TblHoldin.findAll({
   //       where: {
   //         dharmasala: hotelName,
@@ -1057,16 +1122,16 @@ let i = 0;
   //         checkinDateTime: { [Op.lt]: checkoutDateTime },
   //       },
   //     });
-  
+
   //     const unavailableRoomNumbers = new Set([
   //       ...conflictingCheckIns.map((booking) => booking.roomNumber),
   //       ...conflictingHolds.map((hold) => hold.roomNumber),
   //     ]);
-  
+
   //     const availableRoomNumbers = roomNumbers.filter(
   //       (roomNumber) => !unavailableRoomNumbers.has(roomNumber)
   //     );
-  
+
   //     if (availableRoomNumbers.length) {
   //       availableRooms.push({
   //         roomType: range.roomType,
@@ -1081,7 +1146,7 @@ let i = 0;
   //       });
   //     }
   //   }
-  
+
   //   return availableRooms;
   // };
   // getAvailableRoom = async (req) => {
@@ -1096,10 +1161,10 @@ let i = 0;
   //     numRooms,
   //     roomType,
   //   } = req.body;
-  
+
   //   const checkinDateTime = new Date(checkinDate + ' ' + checkinTime);
   //   const checkoutDateTime = new Date(checkoutDate + ' ' + checkoutTime);
-  
+
   //   const roomQueryOptions = {
   //     where: { dharmasala_id: hotelName },
   //     include: [
@@ -1109,13 +1174,13 @@ let i = 0;
   //     ],
   //     order: [['FroomNo', 'ASC']],
   //   };
-  
+
   //   if (roomType) {
   //     roomQueryOptions.where.roomType = roomType;
   //   }
-  
+
   //   const roomRanges = await TblRoom.findAll(roomQueryOptions);
-  
+
   //   const conflictingBookings = await TblCheckin.findAll({
   //     where: {
   //       dharmasala: hotelName,
@@ -1127,7 +1192,7 @@ let i = 0;
   //       checkinDateTime: { [Op.lt]: checkoutDateTime },
   //     },
   //   });
-  
+
   //   const conflictingHolds = await TblHoldin.findAll({
   //     where: {
   //       dharmasala: hotelName,
@@ -1139,19 +1204,19 @@ let i = 0;
   //       checkinDateTime: { [Op.lt]: checkoutDateTime },
   //     },
   //   });
-  
+
   //   const unavailableRoomNumbers = new Set([    ...conflictingBookings.map((booking) => booking.roomNumber),    ...conflictingHolds.map((hold) => hold.roomNumber),  ]);
-  
+
   //   const availableRooms = roomRanges.flatMap(range => {
   //     const roomNumbers = Array.from(
   //       { length: range.TroomNo - range.FroomNo + 1 },
   //       (_, i) => range.FroomNo + i
   //     );
-  
+
   //     const availableRoomNumbers = roomNumbers.filter(
   //       (roomNumber) => !unavailableRoomNumbers.has(roomNumber)
   //     );
-  
+
   //     if (availableRoomNumbers.length) {
   //       return {
   //         roomType: range.roomType,
@@ -1168,10 +1233,9 @@ let i = 0;
   //       return [];
   //     }
   //   });
-  
+
   //   return availableRooms;
   // };
-  
 
   //ROOM CATEGORIES
 
@@ -1501,12 +1565,12 @@ let i = 0;
     if (!fromDate) {
       fromDate = currentDate;
     }
-    if(!toDate){
-      toDate = new Date()
+    if (!toDate) {
+      toDate = new Date();
       toDate.setDate(toDate.getDate() + 1);
     }
-    
-// console.log(currentDate)
+
+    // console.log(currentDate)
     const [results] = await sequelize.query(`
   SELECT room.*, dharamsala.image1 AS dharamsalaImage
   FROM tbl_rooms room
@@ -1558,8 +1622,8 @@ let i = 0;
       );
       return [...result, ...rangeNumbers];
     }, []);
-//     console.log("allroomrnumver");
-// console.log(allRoomNumbers)
+    //     console.log("allroomrnumver");
+    // console.log(allRoomNumbers)
     // Find all rooms that are currently checked in or on hold
     const occupiedRooms = await TblCheckin.findAll({
       where: {
@@ -1588,8 +1652,8 @@ let i = 0;
 
     // Get room numbers from occupied rooms and on hold rooms
     const occupiedRoomNumbers = occupiedRooms.map((room) => room.RoomNo);
-    const onHoldRoomNumbers = onHoldRooms.map((room) => room.roomNo); 
-// console.log(occupiedRoomNumbers,onHoldRoomNumbers)
+    const onHoldRoomNumbers = onHoldRooms.map((room) => room.roomNo);
+    // console.log(occupiedRoomNumbers,onHoldRoomNumbers)
     // Generate a list of available rooms
     const availableRooms = roomRanges.reduce((result, range) => {
       const rangeNumbers = Array.from(
@@ -1636,7 +1700,7 @@ let i = 0;
     return result;
   };
 
-  createBookingPara = async (req) => { };
+  createBookingPara = async (req) => {};
 }
 
 module.exports = new RoomCollection();
