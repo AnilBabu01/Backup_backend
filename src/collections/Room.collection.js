@@ -22,6 +22,8 @@ const TblDharmasal = db.dharmashala;
 //     console.error("Error syncing model", err);
 //   });
 
+
+
 class RoomCollection {
   roomCheckin = async (req, id) => {
     let result = [];
