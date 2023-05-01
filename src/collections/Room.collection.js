@@ -881,6 +881,37 @@ class RoomCollection {
     return availableRoomsObj;
   };
 
+  getRoomHistory = async (req) => {
+    const currentTime = new Date().toLocaleTimeString();
+    const currentDate = new Date();
+    const searchObj = {
+      coutDate: {
+        [Op.lt]: currentDate
+      },
+      coutTime:
+      {
+        [Op.lt]: currentTime
+      },
+    };
+
+    if (req.query.modeOfBooking) {
+      searchObj.modeOfBooking = req.query.modeOfBooking
+    }
+
+    if (req.query.bookedBy) {
+      searchObj.booked_by = req.query.bookedBy
+    }
+
+    const checkinHistoryData = await TblCheckin.findAll(
+      {
+        where: searchObj
+      }
+    )
+
+    return checkinHistoryData;
+
+  };
+
   //ROOM CATEGORIES
 
   CreateRoomCategory = async (req) => {

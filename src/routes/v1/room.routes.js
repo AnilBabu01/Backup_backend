@@ -35,6 +35,7 @@ router.route("/users-room").get(adminAuth(), roomController.getonlineRooms); //f
 //Rooms
 
 router.route("/check-room").post(roomController.getAvailableRoom);
+router.route("/get-room-history").post(adminAuth(),roomController.getRoomHistory);
 router.route("/check-room-catg").get(roomController.getAvailableRoombyCategory);
 //ROOM AVAILBILITIES
 

@@ -223,6 +223,16 @@ console.log(ccheckin)
     });
   });
 
+  const getRoomHistory = catchAsync(async (req, res) => {
+    const data = await RoomCollection.getRoomHistory(req);
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  });
+
 
   const CreateRoomCategory = catchAsync(async (req, res) => {
     const data = await RoomCollection.CreateRoomCategory(req);
@@ -386,5 +396,6 @@ console.log(ccheckin)
     getAvailableRoom,
     checkinPayment,
     checkinuser,
-    editRoomCategory
+    editRoomCategory,
+    getRoomHistory
   }
