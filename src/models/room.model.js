@@ -71,4 +71,8 @@ const Roomes = sequelize.define(tbl.TBL_ROOMS, {
   },
 });
 
+Roomes.associate = (models) => {
+  Roomes.belongsTo(models.tbl_dharmasala, { foreignKey: 'dharmasalaId' });
+};
+
 module.exports = Roomes;
