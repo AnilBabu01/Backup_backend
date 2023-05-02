@@ -171,6 +171,49 @@ class RoomCollection {
     }
   };
 
+    updateHoldinDateTime = async (req) => {
+    const id = req.body.id;
+
+    try {
+      const holdin = await TblHoldin.findOne({ where: { id: id } });
+
+      if (!holdin) {
+        throw new Error({ error: "holdin not found" });
+      }
+
+      console.log(req.body.remain, "req remain")
+      console.log(req.body.remainTime, "req remainTime")
+
+      const remain = req.body.remain
+        ? new Date(req.body.remain)
+        : new Date();
+      const remainTime = req.body.remainTime
+        ? new Date(req.body.remainTime).toLocaleTimeString()
+        : new Date().toLocaleTimeString();
+
+      console.log(remain, "remain")
+      console.log(remainTime, "remainTime")
+
+      holdin.remain = remain;
+      holdin.remainTime = remainTime;
+
+      await holdin.save();
+
+      return {
+        status: true,
+        message: "Holdin Updated Successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Failed To Update",
+        data: error?.message,
+      };
+    }
+  };
+
   getCheckinNew = async (req) => {
     const currentDate = new Date();
     const currentRooms = await TblCheckin.findAll({

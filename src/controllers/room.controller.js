@@ -21,6 +21,19 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const updateHoldinDateTime = async (req, res) => {
+
+    const data = await RoomCollection.updateHoldinDateTime(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
 
 
 const checkIn = catchAsync(async (req, res) => {
@@ -409,5 +422,6 @@ console.log(ccheckin)
     checkinuser,
     editRoomCategory,
     getRoomHistory,
-    checkOut
+    checkOut,
+    updateHoldinDateTime
   }

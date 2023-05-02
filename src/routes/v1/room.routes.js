@@ -15,6 +15,7 @@ router.route('/checkin-user').get(auth(),roomController.checkinuser)
 //checkin
 
 router.route("/checkOut").post(auth(), roomController.checkOut);
+router.route("/update-holdin").put(auth(), roomController.updateHoldinDateTime);
 
 router.route("/facility").post(adminAuth(), roomController.CreateFacilities);
 router.route("/facility").get(adminAuth(), roomController.getFacilities);
