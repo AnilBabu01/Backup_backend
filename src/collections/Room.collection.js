@@ -186,7 +186,51 @@ class RoomCollection {
         },
       },
     });
-    return currentRooms;
+    const currentRoomsData = await Promise.all(currentRooms.map(async room => {
+      let query = `SELECT name FROM tbl_dharmasalas WHERE dharmasala_id = ${room.dharmasala}`;
+      const[[data]] = await sequelize.query(query);
+
+      let query2 =`select * from tbl_rooms where ${room.RoomNo} BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo`
+      const[[roomDetails]] = await sequelize.query(query2);
+      console.log(roomDetails)
+      
+      const categories = await TblRoomCategory.findAll({
+        where: { category_id: JSON.parse(JSON.parse(roomDetails.category_id)) },
+      });
+      let category_name = categories.map((category) => category.name);
+
+      const facilities = await TblFacility.findAll({
+        where: { facility_id: JSON.parse(JSON.parse(roomDetails.facility_id)) },
+      });
+
+      let facility_name = facilities.map((facility) => facility.name);
+
+      return {...room.dataValues, dharmasala : {
+        ...data,
+        id:room.dataValues.dharmasala
+      },category_name,facility_name}
+    }));
+//    let q = `SELECT tbl_checkins.name AS holderName, 
+//    tbl_dharmasalas.name AS dharmasala_name, 
+//    tbl_checkins.*, 
+//    tbl_dharmasalas.*, 
+//    tbl_rooms.FroomNo, 
+//    tbl_rooms.TroomNo, 
+//    tbl_rooms.*, 
+//    tbl_rooms.facility_id, 
+//    tbl_rooms.category_id 
+//  FROM tbl_checkins 
+//  JOIN tbl_dharmasalas 
+//    ON tbl_checkins.dharmasala = tbl_dharmasalas.dharmasala_id 
+//  JOIN tbl_rooms 
+//    ON tbl_checkins.RoomNo BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo 
+//  WHERE tbl_checkins.coutDate > '${currentDate}'
+//    AND tbl_checkins.date <= '${currentDate}'
+//    AND tbl_checkins.time <= '${currentDate.toLocaleTimeString()}'`
+ 
+//     const currentRooms= await sequelize.query(query);
+       
+     return currentRoomsData;
   };
 
   // roomCheckinOld = async (req, id) => {
@@ -278,12 +322,15 @@ class RoomCollection {
   JOIN tbl_dharmasalas ON tbl_checkins.dharmasala = tbl_dharmasalas.dharmasala_id
   JOIN tbl_rooms ON tbl_checkins.RoomNo BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo  
   `;
+  const currentDate = new Date();
+
     const [results, metadata] = await sequelize.query(query);
     let facilitiesCategory = results?.map((facility) => {
       facility.facility_id = JSON.parse(JSON.parse(facility.facility_id));
       facility.category_id = JSON.parse(JSON.parse(facility.category_id));
       return facility;
     });
+    // return (results)
 
     await Promise.all(
       facilitiesCategory.map(async (facility) => {
