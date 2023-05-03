@@ -102,18 +102,7 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
   booked_by:{
     type: Sequelize.INTEGER(50),
     allowNull: false,
-  },
-  roomAmount: {
-    type: Sequelize.FLOAT,
-    defaultValue: 0,
-  },
-  advanceAmount: {
-    type: Sequelize.FLOAT,
-    defaultValue: 0,
-  },
-  paymentMode:{
-    type: Sequelize.INTEGER,          //to store whether it is online or cash booking at counter
-  },
+  }
 });
 
 module.exports = Room;
