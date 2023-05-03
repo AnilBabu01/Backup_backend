@@ -214,6 +214,102 @@ class RoomCollection {
     }
   };
 
+  getRoomBookingReport = async (req) => {
+    try{
+      const today = new Date();
+    const startOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    ).toISOString().split('T').join(' ').split('Z').join('');
+    const endOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + 1,
+      0,
+      0,
+      -1
+    ).toISOString().split('T').join(' ').split('Z').join('');
+
+    console.log(startOfToday, " ", endOfToday)
+
+    
+
+      const query = `
+      SELECT TC.modeOfBooking,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' GROUP BY TC.modeOfBooking;
+    `;
+      const [roomBookingReport, metadata] = await sequelize.query(query);
+
+      return roomBookingReport
+    
+    }
+    catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Something Went Wrong",
+        data: error?.message,
+      };
+    }
+    };
+
+    getRoomBookingStats = async (req) => {
+      try{
+        const today = new Date();
+      const startOfToday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      ).toISOString().split('T').join(' ').split('Z').join('');
+      const endOfToday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1,
+        0,
+        0,
+        -1
+      ).toISOString().split('T').join(' ').split('Z').join('');
+  
+      console.log(startOfToday, " ", endOfToday)
+  
+      
+  
+        const query = `
+        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' GROUP BY TE.Username,TC.paymentMode;
+      `;
+        const [roomBookingStats, metadata] = await sequelize.query(query);
+        console.log(roomBookingStats, "room booking stats")
+
+          let dataBankCashObj = {}
+          for (let entry of roomBookingStats) {
+            let key = entry.Username + "_" + entry.id;
+            if (dataBankCashObj[key]) {
+              dataBankCashObj[key].bank = entry.paymentMode === 1 ? dataBankCashObj[key].bank + Number(entry.total_amount) : dataBankCashObj[key].bank;
+              dataBankCashObj[key].cash = entry.paymentMode === 2 ? dataBankCashObj[key].cash + Number(entry.total_amount) : dataBankCashObj[key].cash;          
+            }
+            else {
+              dataBankCashObj[key] = {
+                  userName: entry.Username,
+                  bank: entry.paymentMode === 1 ? Number(entry.total_amount) : 0,
+                  cash: entry.paymentMode === 2 ? Number(entry.total_amount) : 0,
+                }              
+            }    
+          }    
+          return Object.values(dataBankCashObj);
+      
+      }
+      catch (error) {
+        // Return error response if there is an error
+        console.log(error);
+        return {
+          status: false,
+          message: "Something Went Wrong",
+          data: error?.message,
+        };
+      }
+      };
+
   getCheckinNew = async (req) => {
     const currentDate = new Date();
     const currentRooms = await TblCheckin.findAll({

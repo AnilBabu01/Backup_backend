@@ -60,6 +60,10 @@ router.route("/dharmashala").put(adminAuth(), roomController.editDharmasala);
 router
   .route("/booking-parameters")
   .post(adminAuth(), roomController.createBookingPara);
+
+  router.route("/room-booking-report").get(adminAuth(),roomController.getRoomBookingReport);
+
+  router.route("/room-booking-stats").get(adminAuth(),roomController.getRoomBookingStats);
 // router.route("/booking-parameters").get(adminAuth(), roomController.getBookingPara)
 // router.route("/booking-parameters").put(adminAuth(), roomController.updateBookingPara)
 
