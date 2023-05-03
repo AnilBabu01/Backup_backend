@@ -219,7 +219,7 @@ class RoomCollection {
     const currentRooms = await TblCheckin.findAll({
       where: {
         coutDate: {
-          [Op.gt]: currentDate,
+          [Op.gte]: currentDate,
         },
         date: {
           [Sequelize.Op.lte]: currentDate,
@@ -694,9 +694,10 @@ class RoomCollection {
 
   getHoldIn = async () => {
     const currentDate = new Date()
+  
     let room = await TblHoldin.findAll( {where: {
       remain: {
-        [Op.gt]: currentDate,
+        [Op.gte]: currentDate,
       },
       since: {
         [Sequelize.Op.lte]: currentDate,
