@@ -178,7 +178,7 @@ class RoomCollection {
       const holdin = await TblHoldin.findOne({ where: { id: id } });
 
       if (!holdin) {
-        throw new Error({ error: "holdin not found" });
+        throw new Error("holdin not found" );
       }
 
       console.log(req.body.remain, "req remain")
@@ -742,8 +742,19 @@ class RoomCollection {
   };
 
   getHoldIn = async () => {
-    let room = await TblHoldin.findAll();
-
+    const currentDate = new Date()
+    let room = await TblHoldin.findAll( {where: {
+      remain: {
+        [Op.gt]: currentDate,
+      },
+      since: {
+        [Sequelize.Op.lte]: currentDate,
+      },
+      sinceTime: {
+        [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
+      },
+    },});
+console.log(room)
     return room;
   };
 
