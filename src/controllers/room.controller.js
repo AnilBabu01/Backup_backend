@@ -21,6 +21,19 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const updateHoldinDateTime = async (req, res) => {
+
+    const data = await RoomCollection.updateHoldinDateTime(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
 
 
 const checkIn = catchAsync(async (req, res) => {
@@ -234,6 +247,16 @@ console.log(ccheckin)
     });
   });
 
+  const getRoomHistory = catchAsync(async (req, res) => {
+    const data = await RoomCollection.getRoomHistory(req);
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  });
+
 
   const CreateRoomCategory = catchAsync(async (req, res) => {
     const data = await RoomCollection.CreateRoomCategory(req);
@@ -398,5 +421,7 @@ console.log(ccheckin)
     checkinPayment,
     checkinuser,
     editRoomCategory,
-    checkOut
+    getRoomHistory,
+    checkOut,
+    updateHoldinDateTime
   }

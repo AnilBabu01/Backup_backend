@@ -171,6 +171,49 @@ class RoomCollection {
     }
   };
 
+    updateHoldinDateTime = async (req) => {
+    const id = req.body.id;
+
+    try {
+      const holdin = await TblHoldin.findOne({ where: { id: id } });
+
+      if (!holdin) {
+        throw new Error("holdin not found" );
+      }
+
+      console.log(req.body.remain, "req remain")
+      console.log(req.body.remainTime, "req remainTime")
+
+      const remain = req.body.remain
+        ? new Date(req.body.remain)
+        : new Date();
+      const remainTime = req.body.remainTime
+        ? new Date(req.body.remainTime).toLocaleTimeString()
+        : new Date().toLocaleTimeString();
+
+      console.log(remain, "remain")
+      console.log(remainTime, "remainTime")
+
+      holdin.remain = remain;
+      holdin.remainTime = remainTime;
+
+      await holdin.save();
+
+      return {
+        status: true,
+        message: "Holdin Updated Successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Failed To Update",
+        data: error?.message,
+      };
+    }
+  };
+
   getCheckinNew = async (req) => {
     const currentDate = new Date();
     const currentRooms = await TblCheckin.findAll({
@@ -650,8 +693,19 @@ class RoomCollection {
   };
 
   getHoldIn = async () => {
-    let room = await TblHoldin.findAll();
-
+    const currentDate = new Date()
+    let room = await TblHoldin.findAll( {where: {
+      remain: {
+        [Op.gt]: currentDate,
+      },
+      since: {
+        [Sequelize.Op.lte]: currentDate,
+      },
+      sinceTime: {
+        [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
+      },
+    },});
+console.log(room)
     return room;
   };
 
@@ -1285,6 +1339,37 @@ class RoomCollection {
 
   //   return availableRooms;
   // };
+
+  getRoomHistory = async (req) => {
+    const currentTime = new Date().toLocaleTimeString();
+    const currentDate = new Date();
+    const searchObj = {
+      coutDate: {
+        [Op.lt]: currentDate
+      },
+      coutTime:
+      {
+        [Op.lt]: currentTime
+      },
+    };
+
+    if (req.query.modeOfBooking) {
+      searchObj.modeOfBooking = req.query.modeOfBooking
+    }
+
+    if (req.query.bookedBy) {
+      searchObj.booked_by = req.query.bookedBy
+    }
+
+    const checkinHistoryData = await TblCheckin.findAll(
+      {
+        where: searchObj
+      }
+    )
+
+    return checkinHistoryData;
+
+  };
 
   //ROOM CATEGORIES
 
