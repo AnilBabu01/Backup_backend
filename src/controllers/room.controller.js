@@ -8,7 +8,31 @@ const crypto = require('crypto');
 
 // Usage: generate a random ID with 8 characters
 
+const checkOut = async (req, res) => {
 
+    const data = await RoomCollection.roomCheckOut(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const updateHoldinDateTime = async (req, res) => {
+
+    const data = await RoomCollection.updateHoldinDateTime(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
 
 
 
@@ -29,7 +53,7 @@ console.log(ccheckin)
   });
 
   const getCheckin = catchAsync(async (req, res) => {
-    const data = await RoomCollection.getCheckin(req);
+    const data = await RoomCollection.getCheckinNew(req);
     if (!data) {
       throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
     }
@@ -223,6 +247,16 @@ console.log(ccheckin)
     });
   });
 
+  const getRoomHistory = catchAsync(async (req, res) => {
+    const data = await RoomCollection.getRoomHistory(req);
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  });
+
 
   const CreateRoomCategory = catchAsync(async (req, res) => {
     const data = await RoomCollection.CreateRoomCategory(req);
@@ -386,5 +420,8 @@ console.log(ccheckin)
     getAvailableRoom,
     checkinPayment,
     checkinuser,
-    editRoomCategory
+    editRoomCategory,
+    getRoomHistory,
+    checkOut,
+    updateHoldinDateTime
   }
