@@ -38,7 +38,9 @@ router.route("/users-room").get(adminAuth(), roomController.getonlineRooms); //f
 //Rooms
 
 router.route("/check-room").post(roomController.getAvailableRoom);
-router.route("/get-room-history").post(adminAuth(),roomController.getRoomHistory);
+router.route("/get-room-history-admin").post(adminAuth(),roomController.getRoomHistory);
+router.route("/get-room-history-employee").post(auth(),roomController.getRoomHistoryEmployee);
+
 router.route("/check-room-catg").get(roomController.getAvailableRoombyCategory);
 //ROOM AVAILBILITIES
 
@@ -63,7 +65,9 @@ router
 
   router.route("/room-booking-report").get(adminAuth(),roomController.getRoomBookingReport);
 
-  router.route("/room-booking-stats").get(adminAuth(),roomController.getRoomBookingStats);
+  router.route("/room-booking-stats-1").get(adminAuth(),roomController.getRoomBookingStats);
+  router.route("/room-booking-stats-2").get(adminAuth(),roomController.getRoomBookingStats2);
+  router.route("/get-guests").get(adminAuth(),roomController.getGuests);
 // router.route("/booking-parameters").get(adminAuth(), roomController.getBookingPara)
 // router.route("/booking-parameters").put(adminAuth(), roomController.updateBookingPara)
 

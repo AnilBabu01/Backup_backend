@@ -254,7 +254,7 @@ class RoomCollection {
     }
     };
 
-    getRoomBookingStats = async (req) => {
+    getRoomBookingStats = async (req,forOnline=false ) => {
       try{
         const today = new Date();
       const startOfToday = new Date(
@@ -276,7 +276,7 @@ class RoomCollection {
       
   
         const query = `
-        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' GROUP BY TE.Username,TC.paymentMode;
+        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' AND ${forOnline?'TC.modeOfBooking=2':'TC.modeOfBooking=1'} GROUP BY TE.Username,TC.paymentMode;
       `;
         const [roomBookingStats, metadata] = await sequelize.query(query);
         console.log(roomBookingStats, "room booking stats")
@@ -309,6 +309,42 @@ class RoomCollection {
         };
       }
       };
+
+      getGuests = async (req) => {
+        try{
+          const today = new Date();
+        const startOfToday = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate()
+        ).toISOString().split('T').join(' ').split('Z').join('');
+        const endOfToday = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() + 1,
+          0,
+          0,
+          -1
+        ).toISOString().split('T').join(' ').split('Z').join('');        
+    
+          const query = `
+          SELECT SUM(male) AS male,SUM(female) AS female,SUM(child) AS child FROM tbl_checkins WHERE createdAt BETWEEN '${startOfToday}' AND '${endOfToday}';
+        `;
+          const [getGuests, metadata] = await sequelize.query(query,{logging:console.log});
+   
+            return getGuests;
+        
+        }
+        catch (error) {
+          // Return error response if there is an error
+          console.log(error);
+          return {
+            status: false,
+            message: "Something Went Wrong",
+            data: error?.message,
+          };
+        }
+        };
 
   getCheckinNew = async (req) => {
     const currentDate = new Date();
@@ -1389,7 +1425,7 @@ console.log(room)
   //   return availableRooms;
   // };
 
-  getRoomHistory = async (req) => {
+  getRoomHistory = async (req, isEmployee=false) => {
     const currentTime = new Date().toLocaleTimeString();
     const currentDate = new Date();
     const searchObj = {
@@ -1408,6 +1444,10 @@ console.log(room)
 
     if (req.query.bookedBy) {
       searchObj.booked_by = req.query.bookedBy
+    }
+
+    if (isEmployee){
+      searchObj.booked_by = req.user.id
     }
 
     const checkinHistoryData = await TblCheckin.findAll(
