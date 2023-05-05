@@ -129,7 +129,7 @@ class RoomCollection {
   };
 
   // Checkout API endpoint
-  roomCheckOut = async (req) => {
+  forceCheckOut = async (req) => {
     const id = req.body.id;
 
     try {
@@ -159,6 +159,48 @@ class RoomCollection {
       return {
         status: true,
         message: "Room checked out successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Room failed to checkout",
+        data: error?.message,
+      };
+    }
+  };
+
+  forceCheckOut = async (req) => {
+    const id = req.body.id;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { id: id } });
+
+      if (!room) {
+        throw new Error({ error: "Room not found" });
+      }
+
+      const checkoutDate = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate)
+        : new Date();
+      const checkoutTime = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate).toLocaleTimeString()
+        : new Date().toLocaleTimeString();
+
+
+      room.coutDate = checkoutDate;
+      room.coutTime = checkoutTime;
+
+      room.roomAmount = room.roomAmount + room.advanceAmount;
+      room.advanceAmount = 0
+        
+
+      await room.save();
+
+      return {
+        status: true,
+        message: "Force Room Check out successful",
       };
     } catch (error) {
       // Return error response if there is an error

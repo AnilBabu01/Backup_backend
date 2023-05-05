@@ -21,6 +21,19 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const forceCheckOut = async (req, res) => {
+
+    const data = await RoomCollection.forceCheckOut(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
   const updateHoldinDateTime = async (req, res) => {
 
     const data = await RoomCollection.updateHoldinDateTime(req);
@@ -493,5 +506,6 @@ console.log(ccheckin)
     getRoomBookingStats,
     getRoomHistoryEmployee,
     getGuests,
-    getRoomBookingStats2
+    getRoomBookingStats2,
+    forceCheckOut
   }
