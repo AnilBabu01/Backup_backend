@@ -34,6 +34,19 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const updateCheckinPayment = async (req, res) => {
+
+    const data = await RoomCollection.updateCheckinPayment(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
   const updateHoldinDateTime = async (req, res) => {
 
     const data = await RoomCollection.updateHoldinDateTime(req);
@@ -73,6 +86,19 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const getEmployeeBookingStats = async (req, res) => {
+
+    const data = await RoomCollection.getRoomBookingStats(req,false,true);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
   const getRoomBookingStats2 = async (req, res) => {
 
     const data = await RoomCollection.getRoomBookingStats(req,true);
@@ -86,9 +112,35 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const getEmployeeBookingStats2 = async (req, res) => {
+
+    const data = await RoomCollection.getRoomBookingStats(req,true,true);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
   const getGuests = async (req, res) => {
 
     const data = await RoomCollection.getGuests(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const employeeGetGuests = async (req, res) => {
+
+    const data = await RoomCollection.getGuests(req,true);
 
     
     if (!data) {
@@ -507,5 +559,9 @@ console.log(ccheckin)
     getRoomHistoryEmployee,
     getGuests,
     getRoomBookingStats2,
-    forceCheckOut
+    forceCheckOut,
+    updateCheckinPayment,
+    getEmployeeBookingStats,
+    getEmployeeBookingStats2,
+    employeeGetGuests
   }

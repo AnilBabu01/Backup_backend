@@ -114,6 +114,10 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
   paymentMode:{
     type: Sequelize.INTEGER,          //to store whether it is online or cash booking at counter
   },
+  paymentDate:{
+    type: Sequelize.DATE,
+    allowNull:true
+  }
 });
 
 // Room.sync({alter:true});

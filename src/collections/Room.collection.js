@@ -171,6 +171,45 @@ class RoomCollection {
     }
   };
 
+  updateCheckinPayment = async (req) => {
+
+    if(!req.body.bookingId){
+      throw new Error({ error: "Booking id is Required" });      
+    }
+    if(!req.body.paymentId){
+      throw new Error({ error: "Payment id is Required" });      
+    }
+
+    const {bookingId, paymentId} = req.body;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { booking_id: bookingId } });
+
+      if (!room) {
+        throw new Error({ error: "Room not found" });
+      }
+
+      const paymentDate = req.body.paymentDate
+        ? new Date(req.body.paymentDate)
+        : new Date();
+
+      await TblCheckin.update({ paymentDate : paymentDate, paymentStatus:1, paymentid:paymentId },{ where : { booking_id: bookingId }});
+
+      return {
+        status: true,
+        message: "Updated successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Something Went Wrong",
+        data: error?.message,
+      };
+    }
+  };
+
   forceCheckOut = async (req) => {
     const id = req.body.id;
 
@@ -296,7 +335,7 @@ class RoomCollection {
     }
     };
 
-    getRoomBookingStats = async (req,forOnline=false ) => {
+    getRoomBookingStats = async (req,forOnline=false,forEmployee=false) => {
       try{
         const today = new Date();
       const startOfToday = new Date(
@@ -312,13 +351,9 @@ class RoomCollection {
         0,
         -1
       ).toISOString().split('T').join(' ').split('Z').join('');
-  
-      console.log(startOfToday, " ", endOfToday)
-  
-      
-  
+
         const query = `
-        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' AND ${forOnline?'TC.modeOfBooking=2':'TC.modeOfBooking=1'} GROUP BY TE.Username,TC.paymentMode;
+        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' AND ${forOnline?'TC.modeOfBooking=2':'TC.modeOfBooking=1'}${forEmployee?` AND TC.booked_by=${req.user.id}`:''} GROUP BY TE.Username,TC.paymentMode;
       `;
         const [roomBookingStats, metadata] = await sequelize.query(query);
         console.log(roomBookingStats, "room booking stats")
@@ -352,7 +387,7 @@ class RoomCollection {
       }
       };
 
-      getGuests = async (req) => {
+      getGuests = async (req,forEmployee=false) => {
         try{
           const today = new Date();
         const startOfToday = new Date(
@@ -370,7 +405,7 @@ class RoomCollection {
         ).toISOString().split('T').join(' ').split('Z').join('');        
     
           const query = `
-          SELECT SUM(male) AS male,SUM(female) AS female,SUM(child) AS child FROM tbl_checkins WHERE createdAt BETWEEN '${startOfToday}' AND '${endOfToday}';
+          SELECT SUM(male) AS male,SUM(female) AS female,SUM(child) AS child FROM tbl_checkins WHERE createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' ${forEmployee?`AND booked_by=${req.user.id}`:''};
         `;
           const [getGuests, metadata] = await sequelize.query(query,{logging:console.log});
    
