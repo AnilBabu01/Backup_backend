@@ -73,7 +73,7 @@ router
   router.route("/employee-get-guests").get(auth(),roomController.employeeGetGuests);
   router.route("/checkOut").post(auth(), roomController.checkOut);
   router.route("/force-checkout").post(auth(), roomController.forceCheckOut);
-  router.route("/update-checkin-payment").put(roomController.updateCheckinPayment);    
+  router.route("/update-checkin-payment").put(adminAuth(),roomController.updateCheckinPayment);    
 // router.route("/booking-parameters").get(adminAuth(), roomController.getBookingPara)
 // router.route("/booking-parameters").put(adminAuth(), roomController.updateBookingPara)
 
