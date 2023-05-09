@@ -34,6 +34,19 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const cancelCheckin = async (req, res) => {
+
+    const data = await RoomCollection.cancelCheckin(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
   const updateCheckinPayment = async (req, res) => {
 
     const data = await RoomCollection.updateCheckinPayment(req);
@@ -45,6 +58,14 @@ const checkOut = async (req, res) => {
     res.send({
     data
     });
+  };
+
+  const getBookingFromBookingId= async (req, res) => {
+
+    const data = await RoomCollection.getBookingFromBookingId(req);
+    res.send(
+    {isExist : data}
+    );
   };
 
   const updateHoldinDateTime = async (req, res) => {
@@ -563,5 +584,7 @@ console.log(ccheckin)
     updateCheckinPayment,
     getEmployeeBookingStats,
     getEmployeeBookingStats2,
-    employeeGetGuests
+    employeeGetGuests,
+    cancelCheckin,
+    getBookingFromBookingId
   }

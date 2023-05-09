@@ -25,6 +25,8 @@ module.exports.facility = require('./facility.model')
 module.exports.holdIn = require('./holdin.model')
 module.exports.cancelVouchers =  require('./cancelledVouchers.model')
 module.exports.dharmashala = require('./darmashala.model')
+module.exports.canceledCheckins = require('./canceledCheckins.model')
+
 
 sequelize.sync().then((result) => {
     console.log('data synced')

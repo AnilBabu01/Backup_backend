@@ -12,6 +12,7 @@ const TblHoldin = db.holdIn;
 const TblRoomCategory = db.RoomCategory;
 const TblFacility = db.facility;
 const TblDharmasal = db.dharmashala;
+const TblCanceledCheckins = db.canceledCheckins
 
 // sequelize
 //   .sync({ alter: true })
@@ -171,6 +172,50 @@ class RoomCollection {
     }
   };
 
+  cancelCheckin = async (req) => {
+    if(!(req.body.id || req.body.bookingId)){
+      throw new Error({ error: "bookingId or id is required" });
+    }
+    const searchObj = {};
+    if(req.body.id){
+      searchObj.id = req.body.id
+    }
+    else{
+      searchObj.booking_id = req.body.bookingId
+    }
+
+    try {
+
+      const roomOrRooms = await TblCheckin.findAll({ where: searchObj,
+        raw:true,
+        nest:true
+       });
+
+      if (!roomOrRooms) {
+        throw new Error({ error: "Room Or Rooms not found" });
+      }
+
+      const canceledCheckinsObj = roomOrRooms
+      await TblCheckin.destroy({ where: searchObj});
+      TblCanceledCheckins.bulkCreate(canceledCheckinsObj);
+      const canceledCheckinsData = await TblCanceledCheckins.findAll();
+      console.log(canceledCheckinsData, "canceled Checkins Data")
+
+      return {
+        status: true,
+        message: "Room canceled successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Room failed to cancel",
+        data: error?.message,
+      };
+    }
+  };
+
   updateCheckinPayment = async (req) => {
 
     if(!req.body.bookingId){
@@ -199,6 +244,35 @@ class RoomCollection {
         status: true,
         message: "Updated successfully",
       };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Something Went Wrong",
+        data: error?.message,
+      };
+    }
+  };
+
+  getBookingFromBookingId = async (req) => {
+
+    if(!req.body.bookingId){
+      throw new Error({ error: "Booking id is Required" });      
+    }
+
+    const {bookingId} = req.body;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { booking_id: bookingId } });
+      console.log("room", room)
+
+      if (!room) {
+        return false
+      }
+
+      return true;
+
     } catch (error) {
       // Return error response if there is an error
       console.log(error);
