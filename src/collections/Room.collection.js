@@ -12,6 +12,7 @@ const TblHoldin = db.holdIn;
 const TblRoomCategory = db.RoomCategory;
 const TblFacility = db.facility;
 const TblDharmasal = db.dharmashala;
+const TblCanceledCheckins = db.canceledCheckins
 
 // sequelize
 //   .sync({ alter: true })
@@ -129,7 +130,7 @@ class RoomCollection {
   };
 
   // Checkout API endpoint
-  roomCheckOut = async (req) => {
+  forceCheckOut = async (req) => {
     const id = req.body.id;
 
     try {
@@ -159,6 +160,160 @@ class RoomCollection {
       return {
         status: true,
         message: "Room checked out successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Room failed to checkout",
+        data: error?.message,
+      };
+    }
+  };
+
+  cancelCheckin = async (req) => {
+    if(!(req.body.id || req.body.bookingId)){
+      throw new Error({ error: "bookingId or id is required" });
+    }
+    const searchObj = {};
+    if(req.body.id){
+      searchObj.id = req.body.id
+    }
+    else{
+      searchObj.booking_id = req.body.bookingId
+    }
+
+    try {
+
+      const roomOrRooms = await TblCheckin.findAll({ where: searchObj,
+        raw:true,
+        nest:true
+       });
+
+      if (!roomOrRooms) {
+        throw new Error({ error: "Room Or Rooms not found" });
+      }
+
+      const canceledCheckinsObj = roomOrRooms
+      await TblCheckin.destroy({ where: searchObj});
+      TblCanceledCheckins.bulkCreate(canceledCheckinsObj);
+      const canceledCheckinsData = await TblCanceledCheckins.findAll();
+      console.log(canceledCheckinsData, "canceled Checkins Data")
+
+      return {
+        status: true,
+        message: "Room canceled successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Room failed to cancel",
+        data: error?.message,
+      };
+    }
+  };
+
+  updateCheckinPayment = async (req) => {
+
+    if(!req.body.bookingId){
+      throw new Error({ error: "Booking id is Required" });      
+    }
+    if(!req.body.paymentId){
+      throw new Error({ error: "Payment id is Required" });      
+    }
+
+    const {bookingId, paymentId} = req.body;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { booking_id: bookingId } });
+
+      if (!room) {
+        throw new Error({ error: "Room not found" });
+      }
+
+      const paymentDate = req.body.paymentDate
+        ? new Date(req.body.paymentDate)
+        : new Date();
+
+      await TblCheckin.update({ paymentDate : paymentDate, paymentStatus:1, paymentid:paymentId },{ where : { booking_id: bookingId }});
+
+      return {
+        status: true,
+        message: "Updated successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Something Went Wrong",
+        data: error?.message,
+      };
+    }
+  };
+
+  getBookingFromBookingId = async (req) => {
+
+    if(!req.body.bookingId){
+      throw new Error({ error: "Booking id is Required" });      
+    }
+
+    const {bookingId} = req.body;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { booking_id: bookingId } });
+      console.log("room", room)
+
+      if (!room) {
+        return false
+      }
+
+      return true;
+
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Something Went Wrong",
+        data: error?.message,
+      };
+    }
+  };
+
+  forceCheckOut = async (req) => {
+    const id = req.body.id;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { id: id } });
+
+      if (!room) {
+        throw new Error({ error: "Room not found" });
+      }
+
+      const checkoutDate = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate)
+        : new Date();
+      const checkoutTime = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate).toLocaleTimeString()
+        : new Date().toLocaleTimeString();
+
+
+      room.coutDate = checkoutDate;
+      room.coutTime = checkoutTime;
+
+      room.roomAmount = room.roomAmount + room.advanceAmount;
+      room.advanceAmount = 0
+        
+
+      await room.save();
+
+      return {
+        status: true,
+        message: "Force Room Check out successful",
       };
     } catch (error) {
       // Return error response if there is an error
@@ -213,6 +368,134 @@ class RoomCollection {
       };
     }
   };
+
+  getRoomBookingReport = async (req) => {
+    try{
+      const today = new Date();
+    const startOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    ).toISOString().split('T').join(' ').split('Z').join('');
+    const endOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + 1,
+      0,
+      0,
+      -1
+    ).toISOString().split('T').join(' ').split('Z').join('');
+
+    console.log(startOfToday, " ", endOfToday)
+
+    
+
+      const query = `
+      SELECT TC.modeOfBooking,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' GROUP BY TC.modeOfBooking;
+    `;
+      const [roomBookingReport, metadata] = await sequelize.query(query);
+
+      return roomBookingReport
+    
+    }
+    catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Something Went Wrong",
+        data: error?.message,
+      };
+    }
+    };
+
+    getRoomBookingStats = async (req,forOnline=false,forEmployee=false) => {
+      try{
+        const today = new Date();
+      const startOfToday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      ).toISOString().split('T').join(' ').split('Z').join('');
+      const endOfToday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1,
+        0,
+        0,
+        -1
+      ).toISOString().split('T').join(' ').split('Z').join('');
+
+        const query = `
+        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' AND ${forOnline?'TC.modeOfBooking=2':'TC.modeOfBooking=1'}${forEmployee?` AND TC.booked_by=${req.user.id}`:''} GROUP BY TE.Username,TC.paymentMode;
+      `;
+        const [roomBookingStats, metadata] = await sequelize.query(query);
+        console.log(roomBookingStats, "room booking stats")
+
+          let dataBankCashObj = {}
+          for (let entry of roomBookingStats) {
+            let key = entry.Username + "_" + entry.id;
+            if (dataBankCashObj[key]) {
+              dataBankCashObj[key].bank = entry.paymentMode === 1 ? dataBankCashObj[key].bank + Number(entry.total_amount) : dataBankCashObj[key].bank;
+              dataBankCashObj[key].cash = entry.paymentMode === 2 ? dataBankCashObj[key].cash + Number(entry.total_amount) : dataBankCashObj[key].cash;          
+            }
+            else {
+              dataBankCashObj[key] = {
+                  userName: entry.Username,
+                  bank: entry.paymentMode === 1 ? Number(entry.total_amount) : 0,
+                  cash: entry.paymentMode === 2 ? Number(entry.total_amount) : 0,
+                }              
+            }    
+          }    
+          return Object.values(dataBankCashObj);
+      
+      }
+      catch (error) {
+        // Return error response if there is an error
+        console.log(error);
+        return {
+          status: false,
+          message: "Something Went Wrong",
+          data: error?.message,
+        };
+      }
+      };
+
+      getGuests = async (req,forEmployee=false) => {
+        try{
+          const today = new Date();
+        const startOfToday = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate()
+        ).toISOString().split('T').join(' ').split('Z').join('');
+        const endOfToday = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() + 1,
+          0,
+          0,
+          -1
+        ).toISOString().split('T').join(' ').split('Z').join('');        
+    
+          const query = `
+          SELECT SUM(male) AS male,SUM(female) AS female,SUM(child) AS child FROM tbl_checkins WHERE createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' ${forEmployee?`AND booked_by=${req.user.id}`:''};
+        `;
+          const [getGuests, metadata] = await sequelize.query(query,{logging:console.log});
+   
+            return getGuests;
+        
+        }
+        catch (error) {
+          // Return error response if there is an error
+          console.log(error);
+          return {
+            status: false,
+            message: "Something Went Wrong",
+            data: error?.message,
+          };
+        }
+        };
 
   getCheckinNew = async (req) => {
     const currentDate = new Date();
@@ -1341,7 +1624,7 @@ console.log(room)
   //   return availableRooms;
   // };
 
-  getRoomHistory = async (req) => {
+  getRoomHistory = async (req, isEmployee=false) => {
     const currentTime = new Date().toLocaleTimeString();
     const currentDate = new Date();
     const searchObj = {
@@ -1360,6 +1643,10 @@ console.log(room)
 
     if (req.query.bookedBy) {
       searchObj.booked_by = req.query.bookedBy
+    }
+
+    if (isEmployee){
+      searchObj.booked_by = req.user.id
     }
 
     const checkinHistoryData = await TblCheckin.findAll(

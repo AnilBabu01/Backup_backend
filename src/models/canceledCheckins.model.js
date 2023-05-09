@@ -2,7 +2,7 @@ const tbl = require("./TableName");
 const Sequelize = require("sequelize");
 const sequelize = require("../db/db-connection");
 
-const Room = sequelize.define(tbl.TBL_CHECKIN, {
+const canceledCheckins = sequelize.define(tbl.canceled_checkins, {
   id: {
     type: Sequelize.INTEGER(50),
     primaryKey: true,
@@ -118,7 +118,9 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
     type: Sequelize.DATE,
     allowNull:true
   }
+},{
+  tableName: 'canceled_checkins'
 });
 
-// Room.sync({alter:true});
-module.exports = Room;
+// canceledCheckins.sync({alter:true});
+module.exports = canceledCheckins;

@@ -21,6 +21,53 @@ const checkOut = async (req, res) => {
     });
   };
 
+  const forceCheckOut = async (req, res) => {
+
+    const data = await RoomCollection.forceCheckOut(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const cancelCheckin = async (req, res) => {
+
+    const data = await RoomCollection.cancelCheckin(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const updateCheckinPayment = async (req, res) => {
+
+    const data = await RoomCollection.updateCheckinPayment(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const getBookingFromBookingId= async (req, res) => {
+
+    const data = await RoomCollection.getBookingFromBookingId(req);
+    res.send(
+    {isExist : data}
+    );
+  };
+
   const updateHoldinDateTime = async (req, res) => {
 
     const data = await RoomCollection.updateHoldinDateTime(req);
@@ -33,6 +80,100 @@ const checkOut = async (req, res) => {
     data
     });
   };
+
+  const getRoomBookingReport = async (req, res) => {
+
+    const data = await RoomCollection.getRoomBookingReport(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const getRoomBookingStats = async (req, res) => {
+
+    const data = await RoomCollection.getRoomBookingStats(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const getEmployeeBookingStats = async (req, res) => {
+
+    const data = await RoomCollection.getRoomBookingStats(req,false,true);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const getRoomBookingStats2 = async (req, res) => {
+
+    const data = await RoomCollection.getRoomBookingStats(req,true);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const getEmployeeBookingStats2 = async (req, res) => {
+
+    const data = await RoomCollection.getRoomBookingStats(req,true,true);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const getGuests = async (req, res) => {
+
+    const data = await RoomCollection.getGuests(req);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+  const employeeGetGuests = async (req, res) => {
+
+    const data = await RoomCollection.getGuests(req,true);
+
+    
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  };
+
+
+
 
 
 
@@ -257,6 +398,16 @@ console.log(ccheckin)
     });
   });
 
+  const getRoomHistoryEmployee = catchAsync(async (req, res) => {
+    const data = await RoomCollection.getRoomHistory(req,true);
+    if (!data) {
+      throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    }
+    res.send({
+    data
+    });
+  });
+
 
   const CreateRoomCategory = catchAsync(async (req, res) => {
     const data = await RoomCollection.CreateRoomCategory(req);
@@ -423,5 +574,17 @@ console.log(ccheckin)
     editRoomCategory,
     getRoomHistory,
     checkOut,
-    updateHoldinDateTime
+    updateHoldinDateTime,
+    getRoomBookingReport,
+    getRoomBookingStats,
+    getRoomHistoryEmployee,
+    getGuests,
+    getRoomBookingStats2,
+    forceCheckOut,
+    updateCheckinPayment,
+    getEmployeeBookingStats,
+    getEmployeeBookingStats2,
+    employeeGetGuests,
+    cancelCheckin,
+    getBookingFromBookingId
   }
