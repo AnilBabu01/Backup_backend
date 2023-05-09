@@ -118,7 +118,9 @@ const canceledCheckins = sequelize.define(tbl.canceled_checkins, {
     type: Sequelize.DATE,
     allowNull:true
   }
+},{
+  tableName: 'canceled_checkins'
 });
 
-canceledCheckins.sync({alter:true});
+// canceledCheckins.sync({alter:true});
 module.exports = canceledCheckins;
