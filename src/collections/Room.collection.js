@@ -264,14 +264,32 @@ class RoomCollection {
     const {bookingId} = req.body;
 
     try {
-      const room = await TblCheckin.findOne({ where: { booking_id: bookingId } });
-      console.log("room", room)
+      const rooms = await TblCheckin.findAll({ where: { booking_id: bookingId } ,
+        attributes: [
+          'booking_id',
+          [
+            sequelize.fn(
+              "SUM",
+              sequelize.col("roomAmount")
+            ),
+            "total_room_amount",
+          ],
+          [
+            sequelize.fn(
+              "SUM",
+              sequelize.col("advanceAmount")
+            ),
+            "total_advance_amount",
+          ]
+        ],raw:true,nest:true});
 
-      if (!room) {
+        console.log(rooms)
+
+      if (!rooms) {
         return false
-      }
+      }      
 
-      return true;
+      return rooms && rooms[0].booking_id?rooms:false;
 
     } catch (error) {
       // Return error response if there is an error
