@@ -410,6 +410,51 @@ class RoomCollection {
     }
   };
 
+  getCancelHistory = async (req) => {
+
+    try {
+      const cancelledCheckins = await TblCanceledCheckins.findAll({raw:true});
+
+      if (!cancelledCheckins.length) {
+        throw new Error("No Cancel History Found");
+      }      
+
+      return cancelledCheckins
+      
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "No Cancel History Found",
+        data: error?.message,
+      };
+    }
+  };
+
+  getHoldinHistory = async (req) => {
+
+    try {
+      const holdins = await TblHoldin.findAll({raw:true});
+
+      if (!holdins.length) {
+        throw new Error("No Holdin History Found");
+      }      
+
+      return holdins
+      
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "No Holdin History Found",
+        data: error?.message,
+      };
+    }
+  };
+
+
   getRoomBookingReport = async (req) => {
     try {
       const today = new Date();

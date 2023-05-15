@@ -85,6 +85,32 @@ const updateHoldinDateTime = async (req, res) => {
   });
 };
 
+const getCancelHistory = async (req, res) => {
+
+  const data = await RoomCollection.getCancelHistory(req);
+
+
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.send({
+    data
+  });
+};
+
+const getHoldinHistory = async (req, res) => {
+
+  const data = await RoomCollection.getHoldinHistory(req);
+
+
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.send({
+    data
+  });
+};
+
 const getRoomBookingReport = async (req, res) => {
 
   const data = await RoomCollection.getRoomBookingReport(req);
@@ -590,5 +616,7 @@ module.exports = {
   getEmployeeBookingStats2,
   employeeGetGuests,
   cancelCheckin,
-  getBookingFromBookingId
+  getBookingFromBookingId,
+  getCancelHistory,
+  getHoldinHistory
 }
