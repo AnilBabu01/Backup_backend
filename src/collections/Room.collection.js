@@ -309,6 +309,8 @@ class RoomCollection {
       if (!rooms) {
         return false
       }
+      
+      rooms[0].total = rooms[0].total_room_amount + rooms[0].total_advance_amount
 
       return rooms && rooms[0].booking_id ? rooms : false;
 
