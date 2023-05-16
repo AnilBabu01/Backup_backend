@@ -36,15 +36,15 @@ class RoomCollection {
     let { coutDate, coutTime, date, time, dharmasala, roomList } = req.body;
 
     //checking difference in dates to calculate the amount
-    coutDate = moment(coutDate);
-    date = moment(date);
-    var daysDiff = coutDate.diff(date, 'days')
+    // coutDate = moment(coutDate);
+    // date = moment(date);
+    // var daysDiff = coutDate.diff(date, 'days')
 
-    //setting checkout Date by increasing time by 3h
-    const [hours,minutes,seconds] = coutTime.split(':');
+    // //setting checkout Date by increasing time by 3h
+    // const [hours,minutes,seconds] = coutTime.split(':');
 
-    req.body.coutDate = coutDate.set({h: Number(hours), m: Number(minutes)}).add(8, 'hours').add(30,'minutes').format("YYYY-MM-DD HH:mm:ss");
-    req.body.coutTime = moment(req.body.coutDate).subtract(5,"hours").subtract(30,'minutes').format("HH:mm:ss");
+    // req.body.coutDate = coutDate.set({h: Number(hours), m: Number(minutes)}).add(8, 'hours').add(30,'minutes').format("YYYY-MM-DD HH:mm:ss");
+    // req.body.coutTime = moment(req.body.coutDate).subtract(5,"hours").subtract(30,'minutes').format("HH:mm:ss");
 
     let allRoomsAvailable = true;
 
@@ -89,7 +89,8 @@ class RoomCollection {
           raw: true,
         });
         let amount = {
-          roomAmount: daysDiff * perDayhour.Rate,
+          // roomAmount: daysDiff * perDayhour.Rate,
+          roomAmount: perDayhour.Rate,
         };
         if (req.body.modeOfBooking) {
           amount.advanceAmount = perDayhour.advance;
