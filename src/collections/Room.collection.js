@@ -89,7 +89,7 @@ class RoomCollection {
           raw: true,
         });
         let amount = {
-          // roomAmount: daysDiff * perDayhour.Rate,
+          // roomAmount: daysDiff * perDayhour.Rate
           roomAmount: perDayhour.Rate,
         };
         if (req.body.modeOfBooking) {
@@ -115,6 +115,8 @@ class RoomCollection {
         }
 
         let room = await TblCheckin.create({ ...req.body, ...amount });
+        const employeeData = await tblEmployee.findOne({where:{id:room.booked_by}});
+        room.setDataValue('bookedByName',employeeData.Username);
         result.push(room);
       } catch (error) {
         return {
@@ -142,8 +144,7 @@ class RoomCollection {
     };
   };
 
-  // Checkout API endpoint
-  forceCheckOut = async (req) => {
+  roomCheckOut = async (req) => {
     const id = req.body.id;
 
     try {
@@ -173,6 +174,49 @@ class RoomCollection {
       return {
         status: true,
         message: "Room checked out successfully",
+      };
+    } catch (error) {
+      // Return error response if there is an error
+      console.log(error);
+      return {
+        status: false,
+        message: "Room failed to checkout",
+        data: error?.message,
+      };
+    }
+  };
+
+  // Checkout API endpoint
+  forceCheckOut = async (req) => {
+    const id = req.body.id;
+
+    try {
+      const room = await TblCheckin.findOne({ where: { id: id } });
+
+      if (!room) {
+        throw new Error({ error: "Room not found" });
+      }
+
+      const checkoutDate = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate)
+        : new Date();
+      const checkoutTime = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate).toLocaleTimeString()
+        : new Date().toLocaleTimeString();
+
+
+      room.coutDate = checkoutDate;
+      room.coutTime = checkoutTime;
+
+      room.roomAmount = room.roomAmount + room.advanceAmount;
+      room.advanceAmount = 0
+
+
+      await room.save();
+
+      return {
+        status: true,
+        message: "Force Room Check out successful",
       };
     } catch (error) {
       // Return error response if there is an error
@@ -594,11 +638,16 @@ class RoomCollection {
         date: {
           [Sequelize.Op.lte]: currentDate,
         },
-        time: {
-          [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
-        },
+        // time: {
+        //   [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
+        // },
       },
     });
+    
+    for(const room of currentRooms){
+      const employeeData = await tblEmployee.findOne({where:{id:room.booked_by}});
+      room.setDataValue('bookedByName',employeeData.Username);
+    }
     const currentRoomsData = await Promise.all(currentRooms.map(async room => {
       let query = `SELECT name FROM tbl_dharmasalas WHERE dharmasala_id = ${room.dharmasala}`;
       const [[data]] = await sequelize.query(query);
