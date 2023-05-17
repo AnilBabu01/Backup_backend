@@ -115,8 +115,8 @@ class RoomCollection {
         }
 
         let room = await TblCheckin.create({ ...req.body, ...amount });
-        const employeeData = await tblEmployee.findOne({where:{id:room.booked_by}});
-        room.setDataValue('bookedByName',employeeData.Username);
+        const employeeData = await tblEmployee.findOne({ where: { id: room.booked_by } });
+        room.setDataValue('bookedByName', employeeData.Username);
         result.push(room);
       } catch (error) {
         return {
@@ -321,13 +321,13 @@ class RoomCollection {
 
     const searchObj = {}
 
-    if(req.body.id){
-      searchObj.id=req.body.id
+    if (req.body.id) {
+      searchObj.id = req.body.id
     }
 
-    if(req.body.bookingId){
-      searchObj.booking_id=req.body.bookingId
-    }   
+    if (req.body.bookingId) {
+      searchObj.booking_id = req.body.bookingId
+    }
 
     try {
       const rooms = await TblCheckin.findAll({
@@ -354,7 +354,7 @@ class RoomCollection {
       if (!rooms) {
         return false
       }
-      
+
       rooms[0].total = rooms[0].total_room_amount + rooms[0].total_advance_amount
 
       return rooms && rooms[0].booking_id ? rooms : false;
@@ -458,14 +458,14 @@ class RoomCollection {
   getCancelHistory = async (req) => {
 
     try {
-      const cancelledCheckins = await TblCanceledCheckins.findAll({raw:true});
+      const cancelledCheckins = await TblCanceledCheckins.findAll({ raw: true });
 
       if (!cancelledCheckins.length) {
         throw new Error("No Cancel History Found");
-      }      
+      }
 
       return cancelledCheckins
-      
+
     } catch (error) {
       // Return error response if there is an error
       console.log(error);
@@ -480,14 +480,14 @@ class RoomCollection {
   getHoldinHistory = async (req) => {
 
     try {
-      const holdins = await TblHoldin.findAll({raw:true});
+      const holdins = await TblHoldin.findAll({ raw: true });
 
       if (!holdins.length) {
         throw new Error("No Holdin History Found");
-      }      
+      }
 
       return holdins
-      
+
     } catch (error) {
       // Return error response if there is an error
       console.log(error);
@@ -497,6 +497,23 @@ class RoomCollection {
         data: error?.message,
       };
     }
+  };
+
+  savePaymentDetails = async (req) => {
+    let result = "";
+    result = await TblCheckin.update(
+      {
+        paymentid: req.body.PAYMENT_ID,
+        paymentStatus: req.body.PAYMENT_STATUS == "Success" ? 1 : 0,
+      },
+      {
+        where: {
+          booking_id: req.body.id,
+        },
+      }
+    );
+
+    return result;
   };
 
 
@@ -643,10 +660,10 @@ class RoomCollection {
         // },
       },
     });
-    
-    for(const room of currentRooms){
-      const employeeData = await tblEmployee.findOne({where:{id:room.booked_by}});
-      room.setDataValue('bookedByName',employeeData.Username);
+
+    for (const room of currentRooms) {
+      const employeeData = await tblEmployee.findOne({ where: { id: room.booked_by } });
+      room.setDataValue('bookedByName', employeeData.Username);
     }
     const currentRoomsData = await Promise.all(currentRooms.map(async room => {
       let query = `SELECT name FROM tbl_dharmasalas WHERE dharmasala_id = ${room.dharmasala}`;
@@ -1997,6 +2014,55 @@ class RoomCollection {
 
     return data;
   };
+
+
+  getDharmasalaData = async (req) => {
+
+    const dharmsalas = await TblDharmasal.findAll({ raw: true, attributes: ['dharmasala_id', 'name'] });
+    const currentTime = new Date();
+
+    for (const dharmsala of dharmsalas) {
+
+      const roomData = await TblRoom.findAll({ where: { dharmasala_id: dharmsala.dharmasala_id }, attributes: ['Froomno', 'TroomNo', 'dharmasala_id', 'category_id', 'facility_id', 'roomType'], raw: true });
+      const roomsCatWise = {};
+      if (roomData.length) {
+        for(const roomRecord of roomData) {
+          const category_id = JSON.parse(JSON.parse(roomRecord.category_id));
+          const categoryName = await TblRoomCategory.findOne({where:{category_id:category_id},attributes:['name'],raw:true})
+          if(!roomsCatWise[categoryName.name]) roomsCatWise[categoryName.name]=[];
+
+            for (let roomNo = roomRecord.Froomno; roomNo <= roomRecord.TroomNo; roomNo++) {
+              roomsCatWise[categoryName.name].push(roomNo)
+          }
+        
+          }
+        }
+
+        const checkedInRooms = await TblCheckin.findAll({ where: { coutDate: { [Op.gt]: currentTime }, dharmasala: dharmsala.dharmasala_id }, logging: console.log, attributes: ['RoomNo'], raw:true })
+        const checkedInRoomsArr = checkedInRooms.map(room=>{
+          return room.RoomNo
+        })
+
+        const holdins = await TblHoldin.findAll({ where: { remain: { [Op.gt]: currentTime }, dharmasala: dharmsala.dharmasala_id }, logging: console.log, attributes: ['roomNo'], raw:true })
+        const holdinsArr = holdins.map(holdin=>{
+          return holdin.roomNo
+        })
+
+        const unavailableRooms = holdinsArr.concat(checkedInRoomsArr);
+
+        Object.keys(roomsCatWise).forEach(category=>{
+          roomsCatWise[category] = roomsCatWise[category].filter( id=> {
+              return !unavailableRooms.includes( id );
+            } );
+          
+        })
+        dharmsala.roomData = roomsCatWise;
+        dharmsala.holdRooms = holdinsArr
+      }
+
+      return dharmsalas;
+      
+    }
 
   // type 0 means online only 1 means offline only 2 means both
   getonlineRooms = async (req) => {

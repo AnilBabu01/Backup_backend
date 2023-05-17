@@ -57,6 +57,7 @@ router
 router.route("/dharmashala").post(adminAuth(), roomController.createDharmasala);
 router.route("/dharmashala").get(auth(), roomController.getDharmasala);
 router.route("/dharmashala").put(adminAuth(), roomController.editDharmasala);
+router.route("/dharmashala-data").get(auth(),roomController.getDharmasalaData);
 
 //booking parameters
 router
@@ -78,6 +79,7 @@ router
   router.route("/get-booking").post(roomController.getBookingFromBookingId);
   router.route("/cancel-history").get(auth(),roomController.getCancelHistory);
   router.route("/holdin-history").get(auth(),roomController.getHoldinHistory);
+  router.route('/payment-complete').put(auth(),roomController.savePaymentDetails);
       
 // router.route("/booking-parameters").get(adminAuth(), roomController.getBookingPara)
 // router.route("/booking-parameters").put(adminAuth(), roomController.updateBookingPara)
