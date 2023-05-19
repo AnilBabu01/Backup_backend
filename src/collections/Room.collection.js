@@ -255,7 +255,7 @@ class RoomCollection {
 
       const canceledCheckinsObj = roomOrRooms
       await TblCheckin.destroy({ where: searchObj });
-      TblCanceledCheckins.bulkCreate(canceledCheckinsObj);
+      await TblCanceledCheckins.bulkCreate(canceledCheckinsObj);
       const canceledCheckinsData = await TblCanceledCheckins.findAll();
       console.log(canceledCheckinsData, "canceled Checkins Data")
 
