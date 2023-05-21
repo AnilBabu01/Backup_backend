@@ -121,6 +121,16 @@ const savePaymentDetails = catchAsync(async (req, res) => {
   });
 });
 
+const getInfoByBookingId = catchAsync(async (req, res) => {
+  const data = await RoomCollection.getInfoByBookingId(req);
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.status(200).send({
+    data: data,
+  });
+});
+
 const getRoomBookingReport = async (req, res) => {
 
   const data = await RoomCollection.getRoomBookingReport(req);
@@ -640,5 +650,6 @@ module.exports = {
   getCancelHistory,
   getHoldinHistory,
   getDharmasalaData,
-  savePaymentDetails
+  savePaymentDetails,
+  getInfoByBookingId
 }

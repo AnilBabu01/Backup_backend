@@ -80,6 +80,8 @@ router
   router.route("/cancel-history").get(auth(),roomController.getCancelHistory);
   router.route("/holdin-history").get(auth(),roomController.getHoldinHistory);
   router.route('/payment-complete').put(auth(),roomController.savePaymentDetails);
+  router.route("/booking-info/:id").get(roomController.getInfoByBookingId);
+
       
 // router.route("/booking-parameters").get(adminAuth(), roomController.getBookingPara)
 // router.route("/booking-parameters").put(adminAuth(), roomController.updateBookingPara)
