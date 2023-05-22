@@ -136,7 +136,7 @@ router
   .get(adminAuth(), donationController.onlineuserDonationAmount);
 router
   .route("/centralized-report")
-  .get(adminAuth(), donationController.centralizeduserDonationAmount);
+  .post(adminAuth(), donationController.centralizeduserDonationAmount);
 
 router
   .route("/get-cons-report")
