@@ -671,7 +671,10 @@ class RoomCollection {
         //   [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
         // },
       },
+      logging:console.log
     });
+
+    console.log(currentRooms, "currentRooms")
 
     for (const room of currentRooms) {
       const employeeData = await tblEmployee.findOne({ where: { id: room.booked_by } });
