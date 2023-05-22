@@ -43,8 +43,8 @@ class RoomCollection {
     //setting checkout Date by increasing time by 3h
     const [hours,minutes,seconds] = coutTime.split(':');
 
-    req.body.coutDate = coutDate.set({h: Number(hours), m: Number(minutes)}).add(8, 'hours').add(30,'minutes').format("YYYY-MM-DD HH:mm:ss");
-    req.body.coutTime = moment(req.body.coutDate).subtract(5,"hours").subtract(30,'minutes').format("HH:mm:ss");
+    req.body.coutDate = coutDate.set({h: Number(hours), m: Number(minutes)}).add(3, 'hours').format("YYYY-MM-DD HH:mm:ss");
+    req.body.coutTime = moment(req.body.coutDate).format("HH:mm:ss");
 
     let allRoomsAvailable = true;
 
