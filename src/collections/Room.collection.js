@@ -43,7 +43,7 @@ class RoomCollection {
     //setting checkout Date by increasing time by 3h
     const [hours,minutes,seconds] = coutTime.split(':');
 
-    req.body.coutDate = coutDate.set({h: Number(hours), m: Number(minutes)}).add(3, 'hours').format("YYYY-MM-DD HH:mm:ss");
+    req.body.coutDate = coutDate.set({h: Number(hours), m: Number(minutes)}).format("YYYY-MM-DD HH:mm:ss");
     req.body.coutTime = moment(req.body.coutDate).format("HH:mm:ss");
 
     let allRoomsAvailable = true;
@@ -658,7 +658,8 @@ class RoomCollection {
   };
 
   getCheckinNew = async (req) => {
-    const currentDate = new Date();
+    let currentDate = new Date();
+    currentDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss");
     const currentRooms = await TblCheckin.findAll({
       where: {
         coutDate: {
@@ -673,8 +674,6 @@ class RoomCollection {
       },
       logging:console.log
     });
-
-    console.log(currentRooms, "currentRooms")
 
     for (const room of currentRooms) {
       const employeeData = await tblEmployee.findOne({ where: { id: room.booked_by } });
