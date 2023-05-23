@@ -659,7 +659,9 @@ class RoomCollection {
 
   getCheckinNew = async (req) => {
     let currentDate = new Date();
-    currentDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss");
+    console.log(currentDate,'latest code Current Date 1');
+    currentDate = moment(currentDate).add(5,'hours').add(30,'minutes').format("YYYY-MM-DD HH:mm:ss");
+    console.log(currentDate,'latest code current Date 2');
     const currentRooms = await TblCheckin.findAll({
       where: {
         coutDate: {
@@ -685,7 +687,6 @@ class RoomCollection {
 
       let query2 = `select * from tbl_rooms where ${room.RoomNo} BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo`
       const [[roomDetails]] = await sequelize.query(query2);
-      console.log(roomDetails)
 
       const categories = await TblRoomCategory.findAll({
         where: { category_id: JSON.parse(JSON.parse(roomDetails.category_id)) },
