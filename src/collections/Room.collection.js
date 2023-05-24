@@ -1160,6 +1160,7 @@ class RoomCollection {
           [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
         },
       },
+      logging:console.log
     });
     console.log(room)
     return room;
