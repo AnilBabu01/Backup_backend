@@ -429,8 +429,8 @@ class RoomCollection {
         ? new Date(req.body.remain)
         : new Date();
       const remainTime = req.body.remainTime
-        ? new Date(req.body.remainTime).toLocaleTimeString()
-        : new Date().toLocaleTimeString();
+        ? new Date(req.body.remainTime)
+        : new Date()
 
       console.log(remain, "remain")
       console.log(remainTime, "remainTime")
