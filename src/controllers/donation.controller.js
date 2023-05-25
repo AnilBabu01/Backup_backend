@@ -412,7 +412,7 @@ const ChangemanualDonation = catchAsync(async (req, res) => {
 const getuserBynum = catchAsync(async (req, res) => {
   const data = await donationService.getuserBynum(req);
   if (!data) {
-    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+    throw new ApiError(httpStatus.NOT_FOUND, "User Not Found");
   }
 
   res.status(200).send({

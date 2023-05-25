@@ -6,6 +6,7 @@ const uploadimage = require("../middlewares/imageupload");
 const db = require("../models");
 const ApiError = require("../utils/ApiError");
 const moment = require('moment');
+const { TBL_ROOM_CATEGORY } = require("../models/TableName");
 
 const TblCheckin = db.Checkin;
 const TblRoom = db.Rooms;
@@ -517,15 +518,21 @@ class RoomCollection {
   };
 
   getInfoByBookingId = async (req) => {
-    const result = await TblCheckin.findAll(
-      {
-        where: {
-          booking_id: req.params.id,
-        },
-      }
-    );
-
-    return result;
+    const query = `SELECT TC.*,TD.name AS dharmasala_name,TR.category_id,TR.facility_id FROM tbl_checkins TC INNER JOIN tbl_dharmasalas TD ON TD.dharmasala_id=TC.dharmasala JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo WHERE TC.booking_id='${req.params.id}';`
+    
+    const [bookingData] = await sequelize.query(query,{raw:true,logging:console.log});
+    for(const record of bookingData){
+      const categoryId = JSON.parse(JSON.parse(record.category_id))
+      const facilityIds = JSON.parse(JSON.parse(record.facility_id))
+      const categoryName = await TblRoomCategory.findOne({where:{category_id:categoryId},raw:true,attributes:['name']});
+      let facilityNames = await TblFacility.findAll({where:{facility_id:facilityIds}, raw:true,attributes:['name']})
+      facilityNames = facilityNames.map(facility=>{
+        return facility.name
+      })
+      record.categoryName = categoryName.name;
+      record.facilities = facilityNames
+    }
+    return bookingData
   };
 
 
