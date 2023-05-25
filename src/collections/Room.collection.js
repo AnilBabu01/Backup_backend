@@ -2073,14 +2073,27 @@ class RoomCollection {
 
         const unavailableRooms = holdinsArr.concat(checkedInRoomsArr);
 
+        const occRoomsOnCategory = {};
+        const holdRoomsCatWise = {}   
+
         Object.keys(roomsCatWise).forEach(category=>{
+
+          holdRoomsCatWise[category] = roomsCatWise[category].filter( id=> {
+            return holdinsArr.includes( id );
+          } );
+
+          occRoomsOnCategory[category] = roomsCatWise[category].filter( id=> {
+            return unavailableRooms.includes( id );
+          } );
+
           roomsCatWise[category] = roomsCatWise[category].filter( id=> {
               return !unavailableRooms.includes( id );
-            } );
-          
+            } );          
         })
+
+        dharmsala.occupiedRooms = occRoomsOnCategory
         dharmsala.roomData = roomsCatWise;
-        dharmsala.holdRooms = holdinsArr
+        dharmsala.holdRooms = holdRoomsCatWise
       }
 
       return dharmsalas;
