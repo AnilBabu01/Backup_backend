@@ -667,7 +667,7 @@ class RoomCollection {
   getCheckinNew = async (req) => {
     let currentDate = new Date();
     console.log(currentDate,'latest code Current Date 1');
-    currentDate = moment(currentDate).add(5,'hours').add(30,'minutes').format("YYYY-MM-DD HH:mm:ss");
+    currentDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss");
     console.log(currentDate,'latest code current Date 2');
     const currentRooms = await TblCheckin.findAll({
       where: {
