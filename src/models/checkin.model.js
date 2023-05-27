@@ -101,7 +101,7 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
   },
   booked_by:{
     type: Sequelize.INTEGER(50),
-    allowNull: false,
+    allowNull: true,
   },
   roomAmount: {
     type: Sequelize.FLOAT,
@@ -117,7 +117,12 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
   paymentDate:{
     type: Sequelize.DATE,
     allowNull:true
-  }
+  },
+  // booked_by_user:{
+  //   type: Sequelize.INTEGER,
+  //   allowNull:true
+  // }
+  
 });
 
 // Room.sync({alter:true});

@@ -535,6 +535,11 @@ class RoomCollection {
     return bookingData
   };
 
+  // checkinHistoryUser = async (req) => {
+  //   const userCheckinData = await TblCheckin.findAll({where:{booked_by_user:req.user.id},raw:true})
+  //   return userCheckinData
+  // };
+
 
   getRoomBookingReport = async (req) => {
     try {
@@ -1131,6 +1136,7 @@ class RoomCollection {
   //ROOM HOLDIN
 
   CreateHoldIn = async (req) => {
+    console.log("Create Holdin Called")
     let result;
 
     let Holdin = await TblHoldin.create(req.body)
@@ -1153,6 +1159,7 @@ class RoomCollection {
   };
 
   getHoldIn = async () => {
+    console.log("get Holdin Called")
     const currentDate = new Date()
 
     let room = await TblHoldin.findAll({

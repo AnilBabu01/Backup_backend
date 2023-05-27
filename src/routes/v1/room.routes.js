@@ -81,6 +81,7 @@ router
   router.route("/holdin-history").get(auth(),roomController.getHoldinHistory);
   router.route('/payment-complete').put(roomController.savePaymentDetails);
   router.route("/booking-info/:id").get(roomController.getInfoByBookingId);
+  // router.route("/checkin-history-user").get(auth(),roomController.checkinHistoryUser);
 
       
 // router.route("/booking-parameters").get(adminAuth(), roomController.getBookingPara)
