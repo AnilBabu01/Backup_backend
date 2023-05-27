@@ -1001,28 +1001,33 @@ class RoomCollection {
     let result;
     let { id } = req.body;
 
+    console.log(req.body,"-------------------->")
+
     await TblCheckin.update(req.body, {
       where: {
         id: id,
       },
     })
       .then((res) => {
+        
         if (res[0] === 1) {
+          console.log("Entering In If Condition")
           result = {
             status: true,
             message: "Room updated successfully",
           };
         } else {
+          console.log("Entering In Else condition")
           result = {
             status: false,
-            message: "Room failed to be update",
+            message: "Room failed to be update in else",
           };
         }
       })
       .catch((err) => {
         result = {
           status: false,
-          message: "Room failed to be update",
+          message: "Room failed to be update in catch error",
         };
       });
     return result;
