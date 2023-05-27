@@ -1170,9 +1170,9 @@ class RoomCollection {
         since: {
           [Sequelize.Op.lte]: currentDate,
         },
-        sinceTime: {
-          [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
-        },
+        // sinceTime: {
+        //   [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
+        // },
       },
       logging:console.log
     });
