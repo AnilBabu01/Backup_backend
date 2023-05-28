@@ -1025,9 +1025,10 @@ class RoomCollection {
         }
       })
       .catch((err) => {
+        console.log(err)
         result = {
           status: false,
-          message: "Room failed to be update in catch error",
+          message: err,
         };
       });
     return result;
