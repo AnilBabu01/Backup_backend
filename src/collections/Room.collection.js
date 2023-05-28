@@ -16,6 +16,7 @@ const TblFacility = db.facility;
 const TblDharmasal = db.dharmashala;
 const TblCanceledCheckins = db.canceledCheckins
 const tblEmployee = db.employees
+const tblUsers = db.userModel
 
 // sequelize
 //   .sync({ alter: true })
@@ -29,11 +30,36 @@ const tblEmployee = db.employees
 
 
 class RoomCollection {
-  roomCheckin = async (req, id) => {
+  roomCheckin = async (req, id, forUser=false) => {
     let result = [];
-    req.body.booking_id = id;
+    let userName = ''
+    if(forUser){
+      req.body.booked_by=null
+      req.body.bookedByUser = req.user.id;
+      const user = await tblUsers.findOne({ where: { id: req.body.bookedByUser } });
+      if (!user){
+        return {
+          status: false,
+          message: "User Does Not Exist"
+        };
+      }
+      userName = user.username
+    }
+    else{
+      req.body.bookedByUser = null
+      req.body.booked_by = req.user.id;
+      const user = await tblEmployee.findOne({ where: { id: req.body.booked_by } });
+      if (!user){
+        return {
+          status: false,
+          message: "User Does Not Exist"
+        };
+      }
+      userName = user.Username
+    }
 
-    req.body.booked_by = req.user.id;
+    req.body.booking_id = id;
+    
     let { coutDate, coutTime, date, time, dharmasala, roomList } = req.body;
 
     // checking difference in dates to calculate the amount
@@ -116,8 +142,7 @@ class RoomCollection {
         }
 
         let room = await TblCheckin.create({ ...req.body, ...amount });
-        const employeeData = await tblEmployee.findOne({ where: { id: room.booked_by } });
-        room.setDataValue('bookedByName', employeeData.Username);
+        room.setDataValue('bookedByName', userName);
         result.push(room);
       } catch (error) {
         return {
@@ -535,10 +560,10 @@ class RoomCollection {
     return bookingData
   };
 
-  // checkinHistoryUser = async (req) => {
-  //   const userCheckinData = await TblCheckin.findAll({where:{booked_by_user:req.user.id},raw:true})
-  //   return userCheckinData
-  // };
+  checkinHistoryUser = async (req) => {
+    const userCheckinData = await TblCheckin.findAll({where:{bookedByUser:req.user.id},raw:true})
+    return userCheckinData
+  };
 
 
   getRoomBookingReport = async (req) => {
@@ -1001,8 +1026,6 @@ class RoomCollection {
     let result;
     let { id } = req.body;
 
-    console.log(req.body,"-------------------->")
-
     await TblCheckin.update(req.body, {
       where: {
         id: id,
@@ -1011,13 +1034,11 @@ class RoomCollection {
       .then((res) => {
         
         if (res[0] === 1) {
-          console.log("Entering In If Condition")
           result = {
             status: true,
             message: "Room updated successfully",
           };
         } else {
-          console.log("Entering In Else condition")
           result = {
             status: false,
             message: "Room failed to be update in else",

@@ -131,15 +131,15 @@ const getInfoByBookingId = catchAsync(async (req, res) => {
   });
 });
 
-// const checkinHistoryUser = catchAsync(async (req, res) => {
-//   const data = await RoomCollection.checkinHistoryUser(req);
-//   if (!data) {
-//     throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
-//   }
-//   res.status(200).send({
-//     data: data,
-//   });
-// });
+const checkinHistoryUser = catchAsync(async (req, res) => {
+  const data = await RoomCollection.checkinHistoryUser(req);
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.status(200).send({
+    data: data,
+  });
+});
 
 const getRoomBookingReport = async (req, res) => {
 
@@ -252,6 +252,24 @@ const checkIn = catchAsync(async (req, res) => {
     data
   });
 });
+
+const userCheckin = catchAsync(async (req, res) => {
+
+  let ccheckin = await RoomCollection.getCheckinCount()
+  let bookingID = `b00${ccheckin}`
+  console.log(ccheckin)
+  const data = await RoomCollection.roomCheckin(req, bookingID, true);
+
+
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.send({
+    data
+  });
+});
+
+
 
 const getCheckin = catchAsync(async (req, res) => {
   const data = await RoomCollection.getCheckinNew(req);
@@ -662,5 +680,6 @@ module.exports = {
   getDharmasalaData,
   savePaymentDetails,
   getInfoByBookingId,
-  // checkinHistoryUser
+  checkinHistoryUser,
+  userCheckin
 }

@@ -9,6 +9,7 @@ router.route("/checkin").post(auth(), roomController.checkIn);
 router.route("/checkin").get(adminAuth(), roomController.getCheckin);
 router.route("/checkin").delete(adminAuth(), roomController.delCheckin);
 router.route("/checkin").put(adminAuth(), roomController.editCheckin);
+router.route("/checkin-user").post(auth(), roomController.userCheckin);
 router.route('/checkin-id').get(roomController.getCheckinbyId)
 router.route('/checkin-payment').put(roomController.checkinPayment)
 router.route('/checkin-user').get(auth(),roomController.checkinuser)
@@ -81,7 +82,7 @@ router
   router.route("/holdin-history").get(auth(),roomController.getHoldinHistory);
   router.route('/payment-complete').put(roomController.savePaymentDetails);
   router.route("/booking-info/:id").get(roomController.getInfoByBookingId);
-  // router.route("/checkin-history-user").get(auth(),roomController.checkinHistoryUser);
+  router.route("/checkin-history-user").get(auth(),roomController.checkinHistoryUser);
 
       
 // router.route("/booking-parameters").get(adminAuth(), roomController.getBookingPara)

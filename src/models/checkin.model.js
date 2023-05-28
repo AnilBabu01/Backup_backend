@@ -118,12 +118,12 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
     type: Sequelize.DATE,
     allowNull:true
   },
-  // booked_by_user:{
-  //   type: Sequelize.INTEGER,
-  //   allowNull:true
-  // }
+  bookedByUser:{
+    type: Sequelize.INTEGER,
+    allowNull:true
+  }
   
 });
 
-// Room.sync({alter:true});
+Room.sync({alter:true});
 module.exports = Room;
