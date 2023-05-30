@@ -215,47 +215,6 @@ class RoomCollection {
     }
   };
 
-  // Checkout API endpoint
-  forceCheckOut = async (req) => {
-    const id = req.body.id;
-
-    try {
-      const room = await TblCheckin.findOne({ where: { id: id } });
-
-      if (!room) {
-        throw new Error({ error: "Room not found" });
-      }
-
-      const checkoutDate = req.body.checkoutDate
-        ? new Date(req.body.checkoutDate)
-        : new Date();
-      const checkoutTime = req.body.checkoutDate
-        ? new Date(req.body.checkoutDate).toLocaleTimeString()
-        : new Date().toLocaleTimeString();
-
-      room.coutDate = checkoutDate;
-      room.coutTime = checkoutTime;
-
-      room.roomAmount = room.roomAmount + room.advanceAmount;
-      room.advanceAmount = 0;
-
-      await room.save();
-
-      return {
-        status: true,
-        message: "Force Room Check out successful",
-      };
-    } catch (error) {
-      // Return error response if there is an error
-      console.log(error);
-      return {
-        status: false,
-        message: "Room failed to checkout",
-        data: error?.message,
-      };
-    }
-  };
-
   cancelCheckin = async (req) => {
     if (!(req.body.id || req.body.bookingId)) {
       throw new Error({ error: "bookingId or id is required" });
@@ -278,11 +237,22 @@ class RoomCollection {
         throw new Error({ error: "Room Or Rooms not found" });
       }
 
-      const canceledCheckinsObj = roomOrRooms;
+      if (roomOrRooms && roomOrRooms.length === 1 && req.body.id) {
+        const currentDate = moment(new Date()).subtract(5, 'hours').subtract(30, 'minutes');
+        const roomChDate = moment(roomOrRooms[0].date).subtract(5, 'hours').subtract(30, 'minutes');
+        const differenceInHours = moment.duration(currentDate.diff(roomChDate)).asHours();
+        if (differenceInHours >= 1) {
+          return {
+            status: false,
+            message: "Room failed to checkout",
+            data: "Time Limit Elapsed",
+          };
+        }
+      }
+
+      const canceledCheckinsObj = roomOrRooms
       await TblCheckin.destroy({ where: searchObj });
       await TblCanceledCheckins.bulkCreate(canceledCheckinsObj);
-      const canceledCheckinsData = await TblCanceledCheckins.findAll();
-      console.log(canceledCheckinsData, "canceled Checkins Data");
 
       return {
         status: true,
@@ -403,6 +373,19 @@ class RoomCollection {
       if (!room) {
         throw new Error({ error: "Room not found" });
       }
+
+      const currentDate = moment(new Date()).subtract(5,'hours').subtract(30,'minutes');
+      const roomChDate = moment(room.date).subtract(5,'hours').subtract(30,'minutes');
+
+      const differenceInHours = moment.duration(currentDate.diff(roomChDate)).asHours();
+      if(differenceInHours>=1){
+        return {
+          status: false,
+          message: "Room failed to checkout",
+          data: "Time Limit Elapsed",
+        };
+      }
+      
 
       const checkoutDate = req.body.checkoutDate
         ? new Date(req.body.checkoutDate)
@@ -617,7 +600,7 @@ class RoomCollection {
     }
   };
 
-  getRoomBookingStats = async (req, forOnline = false, forEmployee = false) => {
+ getRoomBookingStats = async (req, forOnline = false, forEmployee = false) => {
     try {
       const today = new Date();
       const startOfToday = new Date(
@@ -755,10 +738,8 @@ class RoomCollection {
     });
 
     for (const room of currentRooms) {
-      const employeeData = await tblEmployee.findOne({
-        where: { id: room.booked_by },
-      });
-      room.setDataValue("bookedByName", employeeData.Username);
+      const employeeData = room.booked_by?await tblEmployee.findOne({ where: { id: room.booked_by }}):await tblUsers.findOne({ where: { id: room.bookedByUser }});
+      room.setDataValue('bookedByName', employeeData.Username?employeeData.Username:employeeData.username);
     }
     const currentRoomsData = await Promise.all(
       currentRooms.map(async (room) => {
@@ -1076,6 +1057,23 @@ class RoomCollection {
   editCheckin = async (req) => {
     let result;
     let { id } = req.body;
+
+    const room = await TblCheckin.findOne({ where: { id: id } });
+      if (!room) {
+        throw new Error({ error: "Room not found" });
+      }
+
+      const currentDate = moment(new Date()).subtract(5,'hours').subtract(30,'minutes');
+      const roomChDate = moment(room.date).subtract(5,'hours').subtract(30,'minutes');
+
+      const differenceInHours = moment.duration(currentDate.diff(roomChDate)).asHours();
+      if(differenceInHours>=1){
+        return {
+          status: false,
+          message: "Room failed to checkout",
+          data: "Time Limit Elapsed",
+        };
+      }
 
     await TblCheckin.update(req.body, {
       where: {

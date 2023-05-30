@@ -101,7 +101,7 @@ const canceledCheckins = sequelize.define(tbl.canceled_checkins, {
   },
   booked_by:{
     type: Sequelize.INTEGER(50),
-    allowNull: false,
+    allowNull: true,
   },
   roomAmount: {
     type: Sequelize.FLOAT,
@@ -116,6 +116,10 @@ const canceledCheckins = sequelize.define(tbl.canceled_checkins, {
   },
   paymentDate:{
     type: Sequelize.DATE,
+    allowNull:true
+  },
+  bookedByUser:{
+    type: Sequelize.INTEGER,
     allowNull:true
   }
 },{

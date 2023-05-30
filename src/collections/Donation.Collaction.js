@@ -2522,18 +2522,41 @@ userId==1? whereClause =  {
   };
 
   getConsReport = async (req) => {
-    let { fromDate, toDate, user, type } = req.query;
-    let whereClause = '';
+    let { fromDate, toDate} = req.query;
+    
+    let {type, user} = req.body;
+    console.log('user --------->>>> :', user,  type);
+    let whereClause = {};
     let whereClause1 = '';
-    if (user) {
-      whereClause1 = whereClause1 + `WHERE created_by=${user}`;
+    if (user && user.length) {
+      if(user.length===1){
+        whereClause1 = whereClause1 + `WHERE created_by=${user[0]}`;
+      }
+      else{
+        let userWhereCondition = 'WHERE (created_by='
+        for(let i = 0; i <= user.length-1 ; i++){
+          console.log(i," ",typeof(i), " ", user.length-1," ", typeof(user.length-1) )
+          if(i!==user.length-1){
+            userWhereCondition = userWhereCondition + user[i] + " OR created_by="
+          }
+          else{
+            userWhereCondition = userWhereCondition + user[i]+')'
+          }
+        }
+        whereClause1 = whereClause1 + userWhereCondition;
+      }      
     }
-    if (type) {
-      whereClause = whereClause + `WHERE TYPE='${type}'`;
-      whereClause1 = whereClause1 + `${user ? ' AND' : 'WHERE'} TYPE='${type}'`;
+    if (type && type.length) {
+      whereClause.TYPE = type;
+
+      let typeWrappedInQuotes = type.map(typeEle=>{
+        return `'${typeEle}'`
+      })
+      typeWrappedInQuotes = typeWrappedInQuotes.join(',')
+      whereClause1 = whereClause1 + `${user ? ' AND' : 'WHERE'} TYPE IN (${typeWrappedInQuotes})`;
     }
     if (fromDate && toDate) {
-      whereClause = whereClause + `${type ? ' AND' : 'WHERE'} DATE_OF_DAAN BETWEEN '${fromDate}' AND '${toDate}'`;
+      whereClause.DATE_OF_DAAN = { [Op.between]: [fromDate, toDate] };
       whereClause1 = whereClause1 + `${user || type ? ' AND' : 'WHERE'} donation_date BETWEEN '${fromDate}' AND '${toDate}'`;
     }
 
@@ -2610,6 +2633,7 @@ userId==1? whereClause =  {
   centralizeduserDonationAmount = async (req) => {
     let { fromDate, toDate } = req.query;
     let {type,user} = req.body;
+    console.log('req.body------>>>>> :', req.body);
     let whereClause = {};
     let whereClause1 = '';
     if (user && user.length) {
@@ -2630,8 +2654,10 @@ userId==1? whereClause =  {
         whereClause1 = whereClause1 + userWhereCondition;
       }      
     }
+    console.log("type 11111----->>>", type);
     if (type && type.length) {
       whereClause.TYPE = type;
+
       let typeWrappedInQuotes = type.map(typeEle=>{
         return `'${typeEle}'`
       })
@@ -2742,10 +2768,16 @@ userId==1? whereClause =  {
   };
 
   getOnlineReport = async (req) => {
-    let { fromDate, toDate, type } = req.query;
+    let { fromDate, toDate } = req.query;
+    let { type } = req.body;
     let whereClause = {};
-    if (type) {
+    if (type && type.length) {
       whereClause.TYPE = type;
+
+      let typeWrappedInQuotes = type.map(typeEle=>{
+        return `'${typeEle}'`
+      })
+      typeWrappedInQuotes = typeWrappedInQuotes.join(',');
     }
     if (fromDate && toDate) {
       whereClause.DATE_OF_DAAN = { [Op.between]: [fromDate, toDate] };
