@@ -125,5 +125,5 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
   
 });
 
-Room.sync({alter:true});
+// Room.sync({alter:true});
 module.exports = Room;
