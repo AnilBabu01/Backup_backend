@@ -5,7 +5,7 @@ const sequelize = require("../db/db-connection");
 const uploadimage = require("../middlewares/imageupload");
 const db = require("../models");
 const ApiError = require("../utils/ApiError");
-const moment = require('moment');
+const moment = require("moment");
 const { TBL_ROOM_CATEGORY } = require("../models/TableName");
 
 const TblCheckin = db.Checkin;
@@ -14,9 +14,9 @@ const TblHoldin = db.holdIn;
 const TblRoomCategory = db.RoomCategory;
 const TblFacility = db.facility;
 const TblDharmasal = db.dharmashala;
-const TblCanceledCheckins = db.canceledCheckins
-const tblEmployee = db.employees
-const tblUsers = db.userModel
+const TblCanceledCheckins = db.canceledCheckins;
+const tblEmployee = db.employees;
+const tblUsers = db.userModel;
 
 // sequelize
 //   .sync({ alter: true })
@@ -27,50 +27,53 @@ const tblUsers = db.userModel
 //     console.error("Error syncing model", err);
 //   });
 
-
-
 class RoomCollection {
-  roomCheckin = async (req, id, forUser=false) => {
+  roomCheckin = async (req, id, forUser = false) => {
     let result = [];
-    let userName = ''
-    if(forUser){
-      req.body.booked_by=null
+    let userName = "";
+    if (forUser) {
+      req.body.booked_by = null;
       req.body.bookedByUser = req.user.id;
-      const user = await tblUsers.findOne({ where: { id: req.body.bookedByUser } });
-      if (!user){
+      const user = await tblUsers.findOne({
+        where: { id: req.body.bookedByUser },
+      });
+      if (!user) {
         return {
           status: false,
-          message: "User Does Not Exist"
+          message: "User Does Not Exist",
         };
       }
-      userName = user.username
-    }
-    else{
-      req.body.bookedByUser = null
+      userName = user.username;
+    } else {
+      req.body.bookedByUser = null;
       req.body.booked_by = req.user.id;
-      const user = await tblEmployee.findOne({ where: { id: req.body.booked_by } });
-      if (!user){
+      const user = await tblEmployee.findOne({
+        where: { id: req.body.booked_by },
+      });
+      if (!user) {
         return {
           status: false,
-          message: "User Does Not Exist"
+          message: "User Does Not Exist",
         };
       }
-      userName = user.Username
+      userName = user.Username;
     }
 
     req.body.booking_id = id;
-    
+
     let { coutDate, coutTime, date, time, dharmasala, roomList } = req.body;
 
     // checking difference in dates to calculate the amount
     coutDate = moment(coutDate);
     date = moment(date);
-    var daysDiff = coutDate.diff(date, 'days')
+    var daysDiff = coutDate.diff(date, "days");
 
     //setting checkout Date by increasing time by 3h
-    const [hours,minutes,seconds] = coutTime.split(':');
+    const [hours, minutes, seconds] = coutTime.split(":");
 
-    req.body.coutDate = coutDate.set({h: Number(hours), m: Number(minutes)}).format("YYYY-MM-DD HH:mm:ss");
+    req.body.coutDate = coutDate
+      .set({ h: Number(hours), m: Number(minutes) })
+      .format("YYYY-MM-DD HH:mm:ss");
     req.body.coutTime = moment(req.body.coutDate).format("HH:mm:ss");
 
     let allRoomsAvailable = true;
@@ -116,7 +119,7 @@ class RoomCollection {
           raw: true,
         });
         let amount = {
-          roomAmount: daysDiff * perDayhour.Rate
+          roomAmount: daysDiff * perDayhour.Rate,
           // roomAmount: perDayhour.Rate,
         };
         if (req.body.modeOfBooking) {
@@ -142,7 +145,7 @@ class RoomCollection {
         }
 
         let room = await TblCheckin.create({ ...req.body, ...amount });
-        room.setDataValue('bookedByName', userName);
+        room.setDataValue("bookedByName", userName);
         result.push(room);
       } catch (error) {
         return {
@@ -230,13 +233,11 @@ class RoomCollection {
         ? new Date(req.body.checkoutDate).toLocaleTimeString()
         : new Date().toLocaleTimeString();
 
-
       room.coutDate = checkoutDate;
       room.coutTime = checkoutTime;
 
       room.roomAmount = room.roomAmount + room.advanceAmount;
-      room.advanceAmount = 0
-
+      room.advanceAmount = 0;
 
       await room.save();
 
@@ -261,29 +262,27 @@ class RoomCollection {
     }
     const searchObj = {};
     if (req.body.id) {
-      searchObj.id = req.body.id
-    }
-    else {
-      searchObj.booking_id = req.body.bookingId
+      searchObj.id = req.body.id;
+    } else {
+      searchObj.booking_id = req.body.bookingId;
     }
 
     try {
-
       const roomOrRooms = await TblCheckin.findAll({
         where: searchObj,
         raw: true,
-        nest: true
+        nest: true,
       });
 
       if (!roomOrRooms) {
         throw new Error({ error: "Room Or Rooms not found" });
       }
 
-      const canceledCheckinsObj = roomOrRooms
+      const canceledCheckinsObj = roomOrRooms;
       await TblCheckin.destroy({ where: searchObj });
       await TblCanceledCheckins.bulkCreate(canceledCheckinsObj);
       const canceledCheckinsData = await TblCanceledCheckins.findAll();
-      console.log(canceledCheckinsData, "canceled Checkins Data")
+      console.log(canceledCheckinsData, "canceled Checkins Data");
 
       return {
         status: true,
@@ -301,7 +300,6 @@ class RoomCollection {
   };
 
   updateCheckinPayment = async (req) => {
-
     if (!req.body.bookingId) {
       throw new Error({ error: "Booking id is Required" });
     }
@@ -312,7 +310,9 @@ class RoomCollection {
     const { bookingId, paymentId } = req.body;
 
     try {
-      const room = await TblCheckin.findOne({ where: { booking_id: bookingId } });
+      const room = await TblCheckin.findOne({
+        where: { booking_id: bookingId },
+      });
 
       if (!room) {
         throw new Error({ error: "Room not found" });
@@ -322,7 +322,10 @@ class RoomCollection {
         ? new Date(req.body.paymentDate)
         : new Date();
 
-      await TblCheckin.update({ paymentDate: paymentDate, paymentStatus: 1, paymentid: paymentId }, { where: { booking_id: bookingId } });
+      await TblCheckin.update(
+        { paymentDate: paymentDate, paymentStatus: 1, paymentid: paymentId },
+        { where: { booking_id: bookingId } }
+      );
 
       return {
         status: true,
@@ -340,51 +343,46 @@ class RoomCollection {
   };
 
   getBookingFromBookingId = async (req) => {
-
     if (!req.body.bookingId && !req.body.id) {
       throw new Error({ error: "Booking id or id is Required" });
     }
 
-    const searchObj = {}
+    const searchObj = {};
 
     if (req.body.id) {
-      searchObj.id = req.body.id
+      searchObj.id = req.body.id;
     }
 
     if (req.body.bookingId) {
-      searchObj.booking_id = req.body.bookingId
+      searchObj.booking_id = req.body.bookingId;
     }
 
     try {
       const rooms = await TblCheckin.findAll({
         where: searchObj,
         attributes: [
-          'booking_id',
+          "booking_id",
           [
-            sequelize.fn(
-              "SUM",
-              sequelize.col("roomAmount")
-            ),
+            sequelize.fn("SUM", sequelize.col("roomAmount")),
             "total_room_amount",
           ],
           [
-            sequelize.fn(
-              "SUM",
-              sequelize.col("advanceAmount")
-            ),
+            sequelize.fn("SUM", sequelize.col("advanceAmount")),
             "total_advance_amount",
-          ]
-        ], raw: true, nest: true
+          ],
+        ],
+        raw: true,
+        nest: true,
       });
 
       if (!rooms) {
-        return false
+        return false;
       }
 
-      rooms[0].total = rooms[0].total_room_amount + rooms[0].total_advance_amount
+      rooms[0].total =
+        rooms[0].total_room_amount + rooms[0].total_advance_amount;
 
       return rooms && rooms[0].booking_id ? rooms : false;
-
     } catch (error) {
       // Return error response if there is an error
       console.log(error);
@@ -413,13 +411,11 @@ class RoomCollection {
         ? new Date(req.body.checkoutDate).toLocaleTimeString()
         : new Date().toLocaleTimeString();
 
-
       room.coutDate = checkoutDate;
       room.coutTime = checkoutTime;
 
       room.roomAmount = room.roomAmount + room.advanceAmount;
-      room.advanceAmount = 0
-
+      room.advanceAmount = 0;
 
       await room.save();
 
@@ -448,18 +444,16 @@ class RoomCollection {
         throw new Error("holdin not found");
       }
 
-      console.log(req.body.remain, "req remain")
-      console.log(req.body.remainTime, "req remainTime")
+      console.log(req.body.remain, "req remain");
+      console.log(req.body.remainTime, "req remainTime");
 
-      const remain = req.body.remain
-        ? new Date(req.body.remain)
-        : new Date();
+      const remain = req.body.remain ? new Date(req.body.remain) : new Date();
       const remainTime = req.body.remainTime
         ? new Date(req.body.remainTime)
-        : new Date()
+        : new Date();
 
-      console.log(remain, "remain")
-      console.log(remainTime, "remainTime")
+      console.log(remain, "remain");
+      console.log(remainTime, "remainTime");
 
       holdin.remain = remain;
       holdin.remainTime = remainTime;
@@ -482,16 +476,16 @@ class RoomCollection {
   };
 
   getCancelHistory = async (req) => {
-
     try {
-      const cancelledCheckins = await TblCanceledCheckins.findAll({ raw: true });
+      const cancelledCheckins = await TblCanceledCheckins.findAll({
+        raw: true,
+      });
 
       if (!cancelledCheckins.length) {
         throw new Error("No Cancel History Found");
       }
 
-      return cancelledCheckins
-
+      return cancelledCheckins;
     } catch (error) {
       // Return error response if there is an error
       console.log(error);
@@ -504,7 +498,6 @@ class RoomCollection {
   };
 
   getHoldinHistory = async (req) => {
-
     try {
       const holdins = await TblHoldin.findAll({ raw: true });
 
@@ -512,8 +505,7 @@ class RoomCollection {
         throw new Error("No Holdin History Found");
       }
 
-      return holdins
-
+      return holdins;
     } catch (error) {
       // Return error response if there is an error
       console.log(error);
@@ -543,28 +535,41 @@ class RoomCollection {
   };
 
   getInfoByBookingId = async (req) => {
-    const query = `SELECT TC.*,TD.name AS dharmasala_name,TR.category_id,TR.facility_id FROM tbl_checkins TC INNER JOIN tbl_dharmasalas TD ON TD.dharmasala_id=TC.dharmasala JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo WHERE TC.booking_id='${req.params.id}';`
-    
-    const [bookingData] = await sequelize.query(query,{raw:true,logging:console.log});
-    for(const record of bookingData){
-      const categoryId = JSON.parse(JSON.parse(record.category_id))
-      const facilityIds = JSON.parse(JSON.parse(record.facility_id))
-      const categoryName = await TblRoomCategory.findOne({where:{category_id:categoryId},raw:true,attributes:['name']});
-      let facilityNames = await TblFacility.findAll({where:{facility_id:facilityIds}, raw:true,attributes:['name']})
-      facilityNames = facilityNames.map(facility=>{
-        return facility.name
-      })
+    const query = `SELECT TC.*,TD.name AS dharmasala_name,TR.category_id,TR.facility_id FROM tbl_checkins TC INNER JOIN tbl_dharmasalas TD ON TD.dharmasala_id=TC.dharmasala JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo WHERE TC.booking_id='${req.params.id}';`;
+
+    const [bookingData] = await sequelize.query(query, {
+      raw: true,
+      logging: console.log,
+    });
+    for (const record of bookingData) {
+      const categoryId = JSON.parse(JSON.parse(record.category_id));
+      const facilityIds = JSON.parse(JSON.parse(record.facility_id));
+      const categoryName = await TblRoomCategory.findOne({
+        where: { category_id: categoryId },
+        raw: true,
+        attributes: ["name"],
+      });
+      let facilityNames = await TblFacility.findAll({
+        where: { facility_id: facilityIds },
+        raw: true,
+        attributes: ["name"],
+      });
+      facilityNames = facilityNames.map((facility) => {
+        return facility.name;
+      });
       record.categoryName = categoryName.name;
-      record.facilities = facilityNames
+      record.facilities = facilityNames;
     }
-    return bookingData
+    return bookingData;
   };
 
   checkinHistoryUser = async (req) => {
-    const userCheckinData = await TblCheckin.findAll({where:{bookedByUser:req.user.id},raw:true})
-    return userCheckinData
+    const userCheckinData = await TblCheckin.findAll({
+      where: { bookedByUser: req.user.id },
+      raw: true,
+    });
+    return userCheckinData;
   };
-
 
   getRoomBookingReport = async (req) => {
     try {
@@ -573,7 +578,12 @@ class RoomCollection {
         today.getFullYear(),
         today.getMonth(),
         today.getDate()
-      ).toISOString().split('T').join(' ').split('Z').join('');
+      )
+        .toISOString()
+        .split("T")
+        .join(" ")
+        .split("Z")
+        .join("");
       const endOfToday = new Date(
         today.getFullYear(),
         today.getMonth(),
@@ -581,21 +591,22 @@ class RoomCollection {
         0,
         0,
         -1
-      ).toISOString().split('T').join(' ').split('Z').join('');
+      )
+        .toISOString()
+        .split("T")
+        .join(" ")
+        .split("Z")
+        .join("");
 
-      console.log(startOfToday, " ", endOfToday)
-
-
+      console.log(startOfToday, " ", endOfToday);
 
       const query = `
       SELECT TC.modeOfBooking,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' GROUP BY TC.modeOfBooking;
     `;
       const [roomBookingReport, metadata] = await sequelize.query(query);
 
-      return roomBookingReport
-
-    }
-    catch (error) {
+      return roomBookingReport;
+    } catch (error) {
       // Return error response if there is an error
       console.log(error);
       return {
@@ -613,7 +624,12 @@ class RoomCollection {
         today.getFullYear(),
         today.getMonth(),
         today.getDate()
-      ).toISOString().split('T').join(' ').split('Z').join('');
+      )
+        .toISOString()
+        .split("T")
+        .join(" ")
+        .split("Z")
+        .join("");
       const endOfToday = new Date(
         today.getFullYear(),
         today.getMonth(),
@@ -621,33 +637,45 @@ class RoomCollection {
         0,
         0,
         -1
-      ).toISOString().split('T').join(' ').split('Z').join('');
+      )
+        .toISOString()
+        .split("T")
+        .join(" ")
+        .split("Z")
+        .join("");
 
       const query = `
-        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' AND ${forOnline ? 'TC.modeOfBooking=2' : 'TC.modeOfBooking=1'}${forEmployee ? ` AND TC.booked_by=${req.user.id}` : ''} GROUP BY TE.Username,TC.paymentMode;
+        SELECT TE.Username,TE.id,TC.paymentMode,SUM(TR.Rate) AS total_amount FROM tbl_checkins TC JOIN tbl_rooms TR ON TC.RoomNo >= TR.FroomNo AND TC.RoomNo <= TR.TroomNo INNER JOIN tbl_employees TE ON TC.booked_by=TE.id WHERE TC.createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' AND ${
+        forOnline ? "TC.modeOfBooking=2" : "TC.modeOfBooking=1"
+      }${
+        forEmployee ? ` AND TC.booked_by=${req.user.id}` : ""
+      } GROUP BY TE.Username,TC.paymentMode;
       `;
       const [roomBookingStats, metadata] = await sequelize.query(query);
-      console.log(roomBookingStats, "room booking stats")
+      console.log(roomBookingStats, "room booking stats");
 
-      let dataBankCashObj = {}
+      let dataBankCashObj = {};
       for (let entry of roomBookingStats) {
         let key = entry.Username + "_" + entry.id;
         if (dataBankCashObj[key]) {
-          dataBankCashObj[key].bank = entry.paymentMode === 1 ? dataBankCashObj[key].bank + Number(entry.total_amount) : dataBankCashObj[key].bank;
-          dataBankCashObj[key].cash = entry.paymentMode === 2 ? dataBankCashObj[key].cash + Number(entry.total_amount) : dataBankCashObj[key].cash;
-        }
-        else {
+          dataBankCashObj[key].bank =
+            entry.paymentMode === 1
+              ? dataBankCashObj[key].bank + Number(entry.total_amount)
+              : dataBankCashObj[key].bank;
+          dataBankCashObj[key].cash =
+            entry.paymentMode === 2
+              ? dataBankCashObj[key].cash + Number(entry.total_amount)
+              : dataBankCashObj[key].cash;
+        } else {
           dataBankCashObj[key] = {
             userName: entry.Username,
             bank: entry.paymentMode === 1 ? Number(entry.total_amount) : 0,
             cash: entry.paymentMode === 2 ? Number(entry.total_amount) : 0,
-          }
+          };
         }
       }
       return Object.values(dataBankCashObj);
-
-    }
-    catch (error) {
+    } catch (error) {
       // Return error response if there is an error
       console.log(error);
       return {
@@ -665,7 +693,12 @@ class RoomCollection {
         today.getFullYear(),
         today.getMonth(),
         today.getDate()
-      ).toISOString().split('T').join(' ').split('Z').join('');
+      )
+        .toISOString()
+        .split("T")
+        .join(" ")
+        .split("Z")
+        .join("");
       const endOfToday = new Date(
         today.getFullYear(),
         today.getMonth(),
@@ -673,17 +706,24 @@ class RoomCollection {
         0,
         0,
         -1
-      ).toISOString().split('T').join(' ').split('Z').join('');
+      )
+        .toISOString()
+        .split("T")
+        .join(" ")
+        .split("Z")
+        .join("");
 
       const query = `
-          SELECT SUM(male) AS male,SUM(female) AS female,SUM(child) AS child FROM tbl_checkins WHERE createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' ${forEmployee ? `AND booked_by=${req.user.id}` : ''};
+          SELECT SUM(male) AS male,SUM(female) AS female,SUM(child) AS child FROM tbl_checkins WHERE createdAt BETWEEN '${startOfToday}' AND '${endOfToday}' ${
+        forEmployee ? `AND booked_by=${req.user.id}` : ""
+      };
         `;
-      const [getGuests, metadata] = await sequelize.query(query, { logging: console.log });
+      const [getGuests, metadata] = await sequelize.query(query, {
+        logging: console.log,
+      });
 
       return getGuests;
-
-    }
-    catch (error) {
+    } catch (error) {
       // Return error response if there is an error
       console.log(error);
       return {
@@ -696,9 +736,9 @@ class RoomCollection {
 
   getCheckinNew = async (req) => {
     let currentDate = new Date();
-    console.log(currentDate,'latest code Current Date 1');
+    console.log(currentDate, "latest code Current Date 1");
     currentDate = moment(currentDate).format("YYYY-MM-DD HH:mm:ss");
-    console.log(currentDate,'latest code current Date 2');
+    console.log(currentDate, "latest code current Date 2");
     const currentRooms = await TblCheckin.findAll({
       where: {
         coutDate: {
@@ -711,52 +751,63 @@ class RoomCollection {
         //   [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
         // },
       },
-      logging:console.log
+      logging: console.log,
     });
 
     for (const room of currentRooms) {
-      const employeeData = await tblEmployee.findOne({ where: { id: room.booked_by } });
-      room.setDataValue('bookedByName', employeeData.Username);
+      const employeeData = await tblEmployee.findOne({
+        where: { id: room.booked_by },
+      });
+      room.setDataValue("bookedByName", employeeData.Username);
     }
-    const currentRoomsData = await Promise.all(currentRooms.map(async room => {
-      let query = `SELECT name FROM tbl_dharmasalas WHERE dharmasala_id = ${room.dharmasala}`;
-      const [[data]] = await sequelize.query(query);
+    const currentRoomsData = await Promise.all(
+      currentRooms.map(async (room) => {
+        let query = `SELECT name FROM tbl_dharmasalas WHERE dharmasala_id = ${room.dharmasala}`;
+        const [[data]] = await sequelize.query(query);
 
-      let query2 = `select * from tbl_rooms where ${room.RoomNo} BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo`
-      const [[roomDetails]] = await sequelize.query(query2);
+        let query2 = `select * from tbl_rooms where ${room.RoomNo} BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo`;
+        const [[roomDetails]] = await sequelize.query(query2);
 
-      const categories = await TblRoomCategory.findAll({
-        where: { category_id: JSON.parse(JSON.parse(roomDetails.category_id)) },
-      });
-      let category_name = categories.map((category) => category.name);
+        const categories = await TblRoomCategory.findAll({
+          where: {
+            category_id: JSON.parse(JSON.parse(roomDetails.category_id)),
+          },
+        });
+        let category_name = categories.map((category) => category.name);
 
-      const facilities = await TblFacility.findAll({
-        where: { facility_id: JSON.parse(JSON.parse(roomDetails.facility_id)) },
-      });
+        const facilities = await TblFacility.findAll({
+          where: {
+            facility_id: JSON.parse(JSON.parse(roomDetails.facility_id)),
+          },
+        });
 
-      let facility_name = facilities.map((facility) => facility.name);
+        let facility_name = facilities.map((facility) => facility.name);
 
-      return {
-        ...room.dataValues, dharmasala: {
-          ...data,
-          id: room.dataValues.dharmasala
-        }, category_name, facility_name
-      }
-    }));
-    //    let q = `SELECT tbl_checkins.name AS holderName, 
-    //    tbl_dharmasalas.name AS dharmasala_name, 
-    //    tbl_checkins.*, 
-    //    tbl_dharmasalas.*, 
-    //    tbl_rooms.FroomNo, 
-    //    tbl_rooms.TroomNo, 
-    //    tbl_rooms.*, 
-    //    tbl_rooms.facility_id, 
-    //    tbl_rooms.category_id 
-    //  FROM tbl_checkins 
-    //  JOIN tbl_dharmasalas 
-    //    ON tbl_checkins.dharmasala = tbl_dharmasalas.dharmasala_id 
-    //  JOIN tbl_rooms 
-    //    ON tbl_checkins.RoomNo BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo 
+        return {
+          ...room.dataValues,
+          dharmasala: {
+            ...data,
+            id: room.dataValues.dharmasala,
+          },
+          category_name,
+          facility_name,
+        };
+      })
+    );
+    //    let q = `SELECT tbl_checkins.name AS holderName,
+    //    tbl_dharmasalas.name AS dharmasala_name,
+    //    tbl_checkins.*,
+    //    tbl_dharmasalas.*,
+    //    tbl_rooms.FroomNo,
+    //    tbl_rooms.TroomNo,
+    //    tbl_rooms.*,
+    //    tbl_rooms.facility_id,
+    //    tbl_rooms.category_id
+    //  FROM tbl_checkins
+    //  JOIN tbl_dharmasalas
+    //    ON tbl_checkins.dharmasala = tbl_dharmasalas.dharmasala_id
+    //  JOIN tbl_rooms
+    //    ON tbl_checkins.RoomNo BETWEEN tbl_rooms.FroomNo AND tbl_rooms.TroomNo
     //  WHERE tbl_checkins.coutDate > '${currentDate}'
     //    AND tbl_checkins.date <= '${currentDate}'
     //    AND tbl_checkins.time <= '${currentDate.toLocaleTimeString()}'`
@@ -1032,7 +1083,6 @@ class RoomCollection {
       },
     })
       .then((res) => {
-        
         if (res[0] === 1) {
           result = {
             status: true,
@@ -1046,7 +1096,7 @@ class RoomCollection {
         }
       })
       .catch((err) => {
-        console.log(err)
+        console.log(err);
         result = {
           status: false,
           message: err,
@@ -1163,7 +1213,7 @@ class RoomCollection {
   //ROOM HOLDIN
 
   CreateHoldIn = async (req) => {
-    console.log("Create Holdin Called")
+    console.log("Create Holdin Called");
     let result;
 
     let Holdin = await TblHoldin.create(req.body)
@@ -1186,8 +1236,8 @@ class RoomCollection {
   };
 
   getHoldIn = async () => {
-    console.log("get Holdin Called")
-    const currentDate = new Date()
+    console.log("get Holdin Called");
+    const currentDate = new Date();
 
     let room = await TblHoldin.findAll({
       where: {
@@ -1201,9 +1251,9 @@ class RoomCollection {
         //   [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
         // },
       },
-      logging:console.log
+      logging: console.log,
     });
-    console.log(room)
+    console.log(room);
     return room;
   };
 
@@ -1315,7 +1365,7 @@ class RoomCollection {
     }
 
     if (uniqueRoom === 0) {
-      if (Number(req.body.FroomNo) < Number(req.body.TroomNo)) {
+      if (Number(req.body.FroomNo) <= Number(req.body.TroomNo)) {
         let categoryArray = JSON.stringify(req.body.category_id);
         let facilitiesArray = JSON.stringify(req.body.facility_id);
         let Room = await TblRoom.create({
@@ -1843,34 +1893,30 @@ class RoomCollection {
     const currentDate = new Date();
     const searchObj = {
       coutDate: {
-        [Op.lt]: currentDate
+        [Op.lt]: currentDate,
       },
-      coutTime:
-      {
-        [Op.lt]: currentTime
+      coutTime: {
+        [Op.lt]: currentTime,
       },
     };
 
     if (req.query.modeOfBooking) {
-      searchObj.modeOfBooking = req.query.modeOfBooking
+      searchObj.modeOfBooking = req.query.modeOfBooking;
     }
 
     if (req.query.bookedBy) {
-      searchObj.booked_by = req.query.bookedBy
+      searchObj.booked_by = req.query.bookedBy;
     }
 
     if (isEmployee) {
-      searchObj.booked_by = req.user.id
+      searchObj.booked_by = req.user.id;
     }
 
-    const checkinHistoryData = await TblCheckin.findAll(
-      {
-        where: searchObj
-      }
-    )
+    const checkinHistoryData = await TblCheckin.findAll({
+      where: searchObj,
+    });
 
     return checkinHistoryData;
-
   };
 
   //ROOM CATEGORIES
@@ -2072,67 +2118,100 @@ class RoomCollection {
     return data;
   };
 
-
   getDharmasalaData = async (req) => {
-
-    const dharmsalas = await TblDharmasal.findAll({ raw: true, attributes: ['dharmasala_id', 'name'] });
+    const dharmsalas = await TblDharmasal.findAll({
+      raw: true,
+      attributes: ["dharmasala_id", "name"],
+    });
     const currentTime = new Date();
 
     for (const dharmsala of dharmsalas) {
-
-      const roomData = await TblRoom.findAll({ where: { dharmasala_id: dharmsala.dharmasala_id }, attributes: ['Froomno', 'TroomNo', 'dharmasala_id', 'category_id', 'facility_id', 'roomType'], raw: true });
+      const roomData = await TblRoom.findAll({
+        where: { dharmasala_id: dharmsala.dharmasala_id },
+        attributes: [
+          "Froomno",
+          "TroomNo",
+          "dharmasala_id",
+          "category_id",
+          "facility_id",
+          "roomType",
+        ],
+        raw: true,
+      });
       const roomsCatWise = {};
       if (roomData.length) {
-        for(const roomRecord of roomData) {
+        for (const roomRecord of roomData) {
           const category_id = JSON.parse(JSON.parse(roomRecord.category_id));
-          const categoryName = await TblRoomCategory.findOne({where:{category_id:category_id},attributes:['name'],raw:true})
-          if(!roomsCatWise[categoryName.name]) roomsCatWise[categoryName.name]=[];
+          const categoryName = await TblRoomCategory.findOne({
+            where: { category_id: category_id },
+            attributes: ["name"],
+            raw: true,
+          });
+          if (!roomsCatWise[categoryName.name])
+            roomsCatWise[categoryName.name] = [];
 
-            for (let roomNo = roomRecord.Froomno; roomNo <= roomRecord.TroomNo; roomNo++) {
-              roomsCatWise[categoryName.name].push(roomNo)
-          }
-        
+          for (
+            let roomNo = roomRecord.Froomno;
+            roomNo <= roomRecord.TroomNo;
+            roomNo++
+          ) {
+            roomsCatWise[categoryName.name].push(roomNo);
           }
         }
-
-        const checkedInRooms = await TblCheckin.findAll({ where: { coutDate: { [Op.gt]: currentTime }, dharmasala: dharmsala.dharmasala_id }, logging: console.log, attributes: ['RoomNo'], raw:true })
-        const checkedInRoomsArr = checkedInRooms.map(room=>{
-          return room.RoomNo
-        })
-
-        const holdins = await TblHoldin.findAll({ where: { remain: { [Op.gt]: currentTime }, dharmasala: dharmsala.dharmasala_id }, logging: console.log, attributes: ['roomNo'], raw:true })
-        const holdinsArr = holdins.map(holdin=>{
-          return holdin.roomNo
-        })
-
-        const unavailableRooms = holdinsArr.concat(checkedInRoomsArr);
-
-        const occRoomsOnCategory = {};
-        const holdRoomsCatWise = {}   
-
-        Object.keys(roomsCatWise).forEach(category=>{
-
-          holdRoomsCatWise[category] = roomsCatWise[category].filter( id=> {
-            return holdinsArr.includes( id );
-          } );
-
-          occRoomsOnCategory[category] = roomsCatWise[category].filter( id=> {
-            return unavailableRooms.includes( id );
-          } );
-
-          roomsCatWise[category] = roomsCatWise[category].filter( id=> {
-              return !unavailableRooms.includes( id );
-            } );          
-        })
-
-        dharmsala.occupiedRooms = occRoomsOnCategory
-        dharmsala.roomData = roomsCatWise;
-        dharmsala.holdRooms = holdRoomsCatWise
       }
 
-      return dharmsalas;
-      
+      const checkedInRooms = await TblCheckin.findAll({
+        where: {
+          coutDate: { [Op.gt]: currentTime },
+          dharmasala: dharmsala.dharmasala_id,
+        },
+        logging: console.log,
+        attributes: ["RoomNo"],
+        raw: true,
+      });
+      const checkedInRoomsArr = checkedInRooms.map((room) => {
+        return room.RoomNo;
+      });
+
+      const holdins = await TblHoldin.findAll({
+        where: {
+          remain: { [Op.gt]: currentTime },
+          dharmasala: dharmsala.dharmasala_id,
+        },
+        logging: console.log,
+        attributes: ["roomNo"],
+        raw: true,
+      });
+      const holdinsArr = holdins.map((holdin) => {
+        return holdin.roomNo;
+      });
+
+      const unavailableRooms = holdinsArr.concat(checkedInRoomsArr);
+
+      const occRoomsOnCategory = {};
+      const holdRoomsCatWise = {};
+
+      Object.keys(roomsCatWise).forEach((category) => {
+        holdRoomsCatWise[category] = roomsCatWise[category].filter((id) => {
+          return holdinsArr.includes(id);
+        });
+
+        occRoomsOnCategory[category] = roomsCatWise[category].filter((id) => {
+          return unavailableRooms.includes(id);
+        });
+
+        roomsCatWise[category] = roomsCatWise[category].filter((id) => {
+          return !unavailableRooms.includes(id);
+        });
+      });
+
+      dharmsala.occupiedRooms = occRoomsOnCategory;
+      dharmsala.roomData = roomsCatWise;
+      dharmsala.holdRooms = holdRoomsCatWise;
     }
+
+    return dharmsalas;
+  };
 
   // type 0 means online only 1 means offline only 2 means both
   getonlineRooms = async (req) => {
@@ -2398,7 +2477,7 @@ class RoomCollection {
     return result;
   };
 
-  createBookingPara = async (req) => { };
+  createBookingPara = async (req) => {};
 }
 
 module.exports = new RoomCollection();
