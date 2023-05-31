@@ -248,6 +248,7 @@ class RoomCollection {
             data: "Time Limit Elapsed",
           };
         }
+        console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
       }
 
       const canceledCheckinsObj = roomOrRooms
@@ -385,6 +386,8 @@ class RoomCollection {
           data: "Time Limit Elapsed",
         };
       }
+      
+      console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
       
 
       const checkoutDate = req.body.checkoutDate
@@ -1074,6 +1077,7 @@ class RoomCollection {
           data: "Time Limit Elapsed",
         };
       }
+      console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
 
     await TblCheckin.update(req.body, {
       where: {
