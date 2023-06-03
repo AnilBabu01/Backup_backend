@@ -375,19 +375,19 @@ class RoomCollection {
         throw new Error({ error: "Room not found" });
       }
 
-      const currentDate = moment(new Date()).subtract(5,'hours').subtract(30,'minutes');
-      const roomChDate = moment(room.date).subtract(5,'hours').subtract(30,'minutes');
+      // const currentDate = moment(new Date()).subtract(5,'hours').subtract(30,'minutes');
+      // const roomChDate = moment(room.date).subtract(5,'hours').subtract(30,'minutes');
 
-      const differenceInHours = moment.duration(currentDate.diff(roomChDate)).asHours();
-      if(differenceInHours>=1){
-        return {
-          status: false,
-          message: "Room failed to checkout",
-          data: "Time Limit Elapsed",
-        };
-      }
+      // const differenceInHours = moment.duration(currentDate.diff(roomChDate)).asHours();
+      // if(differenceInHours>=1){
+      //   return {
+      //     status: false,
+      //     message: "Room failed to checkout",
+      //     data: "Time Limit Elapsed",
+      //   };
+      // }
       
-      console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
+      // console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
       
 
       const checkoutDate = req.body.checkoutDate
@@ -555,6 +555,26 @@ class RoomCollection {
       raw: true,
     });
     return userCheckinData;
+  };
+
+  getAvailCategories = async (req, getAll=false) => {
+    const searchObj = {};
+    const {id} = req.body;
+    if(!getAll && id){
+      searchObj.dharmasala_id=id
+    }    
+    const distinctCategories = await TblRoom.findAll({
+      where: searchObj,
+      attributes:[[Sequelize.fn('DISTINCT', Sequelize.col('category_id')) ,'category_json'],],
+      raw: true,
+    });
+    const distinctCategoryNames = []
+    for(const category of distinctCategories){
+      
+      const categoryRec =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(category.category_json))},attributes:['category_id','name'],raw:true})
+      distinctCategoryNames.push(categoryRec)
+    }
+    return distinctCategoryNames;
   };
 
   getRoomBookingReport = async (req) => {

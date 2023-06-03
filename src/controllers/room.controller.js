@@ -141,6 +141,26 @@ const checkinHistoryUser = catchAsync(async (req, res) => {
   });
 });
 
+const getAvailCategories = catchAsync(async (req, res) => {
+  const data = await RoomCollection.getAvailCategories(req);
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.status(200).send({
+    data: data,
+  });
+});
+
+const getInUseCategories = catchAsync(async (req, res) => {
+  const data = await RoomCollection.getAvailCategories(req,true);
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.status(200).send({
+    data: data,
+  });
+});
+
 const getRoomBookingReport = async (req, res) => {
 
   const data = await RoomCollection.getRoomBookingReport(req);
@@ -681,5 +701,7 @@ module.exports = {
   savePaymentDetails,
   getInfoByBookingId,
   checkinHistoryUser,
-  userCheckin
+  userCheckin,
+  getAvailCategories,
+  getInUseCategories
 }
