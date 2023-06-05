@@ -7,6 +7,7 @@ const db = require("../models");
 const ApiError = require("../utils/ApiError");
 const moment = require("moment");
 const { TBL_ROOM_CATEGORY } = require("../models/TableName");
+const { sendroomSms } = require("../utils/Sendsms");
 
 const TblCheckin = db.Checkin;
 const TblRoom = db.Rooms;
@@ -166,6 +167,7 @@ class RoomCollection {
         "One or more rooms are unavailable"
       );
     }
+    // sendroomSms(req.body.contactNo,"checkin")
     return {
       status: true,
       message: "Room booked successfully!!",
@@ -199,7 +201,7 @@ class RoomCollection {
           : 0;
 
       await room.save();
-
+      sendroomSms(room.contactNo,"checkout")
       return {
         status: true,
         message: "Room checked out successfully",
@@ -404,7 +406,7 @@ class RoomCollection {
       room.advanceAmount = 0;
 
       await room.save();
-
+      sendroomSms(room.contactNo,"checkout")
       return {
         status: true,
         message: "Force Room Check out successful",
