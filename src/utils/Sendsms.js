@@ -48,7 +48,7 @@ const sendSms = async (mobile, amount, url, type, itemName, weight, Rno) => {
 };
 
 const sendroomSms = async (mobile, type) => {
-  if (mobile.length !== 10 || !Rno || !amount) {
+  if (mobile.length !== 10) {
     return {
       status: false,
       message: "Please check arguments",
@@ -73,7 +73,7 @@ const sendroomSms = async (mobile, type) => {
   }
 
   if (type == "checkout") {
-    payload.template_id = "1207168501748361338";
+    payload.template_id = "647333fcd6fc05494055d092";
     payload.sender = "KNDLPR";
   }
 
@@ -86,7 +86,7 @@ const sendroomSms = async (mobile, type) => {
     json: true,
     body: payload,
   };
-
+// console.log(options)
   request.post(options, (error, response, body) => {
     if (error) {
       console.error(error);
