@@ -8,7 +8,7 @@ const validate = require("../../middlewares/validate");
 const { userValidation } = require("../../validations");
 const router = express.Router();
 const auth = require("../../middlewares/auth");
-const sendSms = require("../../utils/Sendsms");
+const {sendSms} = require("../../utils/Sendsms");
 const adminAuth = require("../../middlewares/adminAuth");
 
 router

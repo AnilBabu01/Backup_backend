@@ -6,7 +6,7 @@ const { isEmailValid } = require("../utils/checkEmail");
 const ApiError = require("../utils/ApiError");
 const crypto = require("crypto");
 const UserCollaction = require("../collections/User.Collaction");
-const sendSms = require("../utils/Sendsms");
+const {sendSms} = require("../utils/Sendsms");
 
 const createUser = catchAsync(async (req, res) => {
   const userdata = await userService.createuser(req.body);
