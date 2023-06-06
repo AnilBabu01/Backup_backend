@@ -579,6 +579,14 @@ class RoomCollection {
     return distinctCategoryNames;
   };
 
+  getDharmasalas = async (req) => {  
+    const query = 'SELECT DISTINCT TD.dharmasala_id,TD.name FROM tbl_rooms TR INNER JOIN tbl_dharmasalas TD ON TR.dharmasala_id=TD.dharmasala_id;'
+
+    const [DsWithRoomsAdded] = await sequelize.query(query);
+    
+    return DsWithRoomsAdded;
+  };
+
   getRoomBookingReport = async (req) => {
     try {
       const today = new Date();

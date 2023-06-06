@@ -83,8 +83,9 @@ router
   router.route('/payment-complete').put(roomController.savePaymentDetails);
   router.route("/booking-info/:id").get(roomController.getInfoByBookingId);
   router.route("/checkin-history-user").get(auth(),roomController.checkinHistoryUser);
-  router.route("/get-avail-categories").post(roomController.getAvailCategories);
-  router.route("/get-used-categories").get(roomController.getInUseCategories);
+  router.route("/get-dharmasalas").get(auth(),roomController.getDharmasalas);
+  router.route("/get-avail-categories").post(auth(),roomController.getAvailCategories);
+  router.route("/get-used-categories").get(auth(),roomController.getInUseCategories);
   
 
 

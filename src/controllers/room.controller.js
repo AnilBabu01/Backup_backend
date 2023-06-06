@@ -151,6 +151,16 @@ const getAvailCategories = catchAsync(async (req, res) => {
   });
 });
 
+const getDharmasalas = catchAsync(async (req, res) => {
+  const data = await RoomCollection.getDharmasalas(req);
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.status(200).send({
+    data: data,
+  });
+});
+
 const getInUseCategories = catchAsync(async (req, res) => {
   const data = await RoomCollection.getAvailCategories(req,true);
   if (!data) {
@@ -703,5 +713,6 @@ module.exports = {
   checkinHistoryUser,
   userCheckin,
   getAvailCategories,
-  getInUseCategories
+  getInUseCategories,
+  getDharmasalas
 }
