@@ -171,6 +171,16 @@ const getInUseCategories = catchAsync(async (req, res) => {
   });
 });
 
+const checkinHistoryByNum = catchAsync(async (req, res) => {
+  const data = await RoomCollection.checkinHistoryByNum(req);
+  if (!data) {
+    throw new ApiError(httpStatus.NOT_FOUND, "!somthing Went Wrong");
+  }
+  res.status(200).send({
+    data: data,
+  });
+});
+
 const getRoomBookingReport = async (req, res) => {
 
   const data = await RoomCollection.getRoomBookingReport(req);
@@ -714,5 +724,6 @@ module.exports = {
   userCheckin,
   getAvailCategories,
   getInUseCategories,
-  getDharmasalas
+  getDharmasalas,
+  checkinHistoryByNum
 }

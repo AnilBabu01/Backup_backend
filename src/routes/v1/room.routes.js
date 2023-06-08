@@ -6,7 +6,7 @@ const adminAuth = require("../../middlewares/adminAuth");
 const { roomController } = require("../../controllers");
 
 router.route("/checkin").post(auth(), roomController.checkIn);
-router.route("/checkin").get(adminAuth(), roomController.getCheckin);
+router.route("/checkin").get(roomController.getCheckin);
 router.route("/checkin").delete(adminAuth(), roomController.delCheckin);
 router.route("/checkin").put(adminAuth(), roomController.editCheckin);
 router.route("/checkin-user").post(auth(), roomController.userCheckin);
@@ -86,6 +86,8 @@ router
   router.route("/get-dharmasalas").get(auth(),roomController.getDharmasalas);
   router.route("/get-avail-categories").post(auth(),roomController.getAvailCategories);
   router.route("/get-used-categories").get(auth(),roomController.getInUseCategories);
+  router.route("/checkin-history-by-num/:num").get(auth(),roomController.checkinHistoryByNum);
+
   
 
 

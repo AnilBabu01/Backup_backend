@@ -239,19 +239,19 @@ class RoomCollection {
         throw new Error({ error: "Room Or Rooms not found" });
       }
 
-      if (roomOrRooms && roomOrRooms.length === 1 && req.body.id) {
-        const currentDate = moment(new Date()).subtract(5, 'hours').subtract(30, 'minutes');
-        const roomChDate = moment(roomOrRooms[0].date).subtract(5, 'hours').subtract(30, 'minutes');
-        const differenceInHours = moment.duration(currentDate.diff(roomChDate)).asHours();
-        if (differenceInHours >= 1) {
-          return {
-            status: false,
-            message: "Room failed to checkout",
-            data: "Time Limit Elapsed",
-          };
-        }
-        console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
-      }
+      // if (roomOrRooms && roomOrRooms.length === 1 && req.body.id) {
+      //   const currentDate = moment(new Date()).subtract(5, 'hours').subtract(30, 'minutes');
+      //   const roomChDate = moment(roomOrRooms[0].date).subtract(5, 'hours').subtract(30, 'minutes');
+      //   const differenceInHours = moment.duration(currentDate.diff(roomChDate)).asHours();
+      //   if (differenceInHours >= 1) {
+      //     return {
+      //       status: false,
+      //       message: "Room failed to checkout",
+      //       data: "Time Limit Elapsed",
+      //     };
+      //   }
+      //   console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
+      // }
 
       const canceledCheckinsObj = roomOrRooms
       await TblCheckin.destroy({ where: searchObj });
@@ -577,6 +577,15 @@ class RoomCollection {
       distinctCategoryNames.push(categoryRec)
     }
     return distinctCategoryNames;
+  };
+
+  checkinHistoryByNum = async (req) => {
+    const {num:contactNo} = req.params; 
+    const checkinHistory = await TblCheckin.findAll({
+      where: {contactNo:contactNo},
+      raw: true,
+    });
+    return checkinHistory;
   };
 
   getDharmasalas = async (req) => {  
