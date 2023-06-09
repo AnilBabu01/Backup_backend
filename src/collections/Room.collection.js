@@ -473,6 +473,23 @@ class RoomCollection {
         throw new Error("No Cancel History Found");
       }
 
+      for(const checkin of cancelledCheckins){
+        const dharmasalaData = await TblDharmasal.findOne({where:{dharmasala_id:checkin.dharmasala},attributes:['name']})
+        const roomData = await TblRoom.findOne({where:{
+          FroomNo: {
+            [Op.lte]:checkin.RoomNo
+          },
+          TroomNo:{
+            [Op.gte]:checkin.RoomNo
+          }
+        },raw:true})
+        const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
+        const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
+        checkin.dharmasalaName=dharmasalaData.name;
+        checkin.categoryName=categoryData.name;
+        checkin.facilityName=facilityData.name;
+      }
+
       return cancelledCheckins;
     } catch (error) {
       // Return error response if there is an error
@@ -1936,9 +1953,9 @@ class RoomCollection {
       coutDate: {
         [Op.lt]: currentDate,
       },
-      coutTime: {
-        [Op.lt]: currentTime,
-      },
+      // coutTime: {
+      //   [Op.lt]: currentTime,
+      // },
     };
 
     if (req.query.modeOfBooking) {
@@ -1954,8 +1971,25 @@ class RoomCollection {
     }
 
     const checkinHistoryData = await TblCheckin.findAll({
-      where: searchObj,
-    });
+      where: searchObj,raw:true
+    }
+    );
+    for(const checkin of checkinHistoryData){
+      const dharmasalaData = await TblDharmasal.findOne({where:{dharmasala_id:checkin.dharmasala},attributes:['name']})
+      const roomData = await TblRoom.findOne({where:{
+        FroomNo: {
+          [Op.lte]:checkin.RoomNo
+        },
+        TroomNo:{
+          [Op.gte]:checkin.RoomNo
+        }
+      },raw:true})
+      const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
+      const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
+      checkin.dharmasalaName=dharmasalaData.name;
+      checkin.categoryName=categoryData.name;
+      checkin.facilityName=facilityData.name;
+    }
 
     return checkinHistoryData;
   };
