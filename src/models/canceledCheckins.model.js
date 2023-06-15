@@ -103,6 +103,14 @@ const canceledCheckins = sequelize.define(tbl.canceled_checkins, {
     type: Sequelize.INTEGER(50),
     allowNull: true,
   },
+  checkoutBy:{
+    type: Sequelize.INTEGER(50),
+    allowNull: true,
+  },
+  forceCoutDate: {
+    type: Sequelize.DATE,
+    allowNull: true,
+  },
   roomAmount: {
     type: Sequelize.FLOAT,
     defaultValue: 0,

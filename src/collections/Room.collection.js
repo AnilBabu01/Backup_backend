@@ -199,6 +199,12 @@ class RoomCollection {
         room.advanceAmount - req.body.advanceAmount > 0
           ? room.advanceAmount - req.body.advanceAmount
           : 0;
+      
+      const employeeExists = await tblEmployee.findOne({where:{id:req.user.id},raw:true});
+      if(!employeeExists){
+        throw new Error({ error: "unauthorized" });
+      }
+      room.checkoutBy=req.user.id
 
       await room.save();
       sendroomSms(room.contactNo,"checkout")
@@ -252,6 +258,15 @@ class RoomCollection {
       //   }
       //   console.log(currentDate,"       ", roomChDate, "       ", differenceInHours)
       // }
+
+      const checkoutDate = req.body.checkoutDate
+        ? new Date(req.body.checkoutDate)
+        : new Date();
+
+      for(const room of roomOrRooms){
+      room.forceCoutDate = checkoutDate;
+      room.checkoutBy=req.user.id
+      }
 
       const canceledCheckinsObj = roomOrRooms
       await TblCheckin.destroy({ where: searchObj });
@@ -399,8 +414,8 @@ class RoomCollection {
         ? new Date(req.body.checkoutDate).toLocaleTimeString()
         : new Date().toLocaleTimeString();
 
-      room.coutDate = checkoutDate;
-      room.coutTime = checkoutTime;
+      room.forceCoutDate = checkoutDate;
+      room.checkoutBy=req.user.id
 
       room.roomAmount = room.roomAmount + room.advanceAmount;
       room.advanceAmount = 0;
@@ -783,15 +798,20 @@ class RoomCollection {
     console.log(currentDate, "latest code current Date 2");
     const currentRooms = await TblCheckin.findAll({
       where: {
-        coutDate: {
-          [Op.gte]: currentDate,
-        },
         date: {
           [Sequelize.Op.lte]: currentDate,
         },
-        // time: {
-        //   [Sequelize.Op.lte]: currentDate.toLocaleTimeString(),
-        // },
+        [Op.or]: [
+          {
+            [Op.and]: [{
+              forceCoutDate:null,
+              coutDate:{[Sequelize.Op.gte]: currentDate}
+           }]
+          },
+          {
+            forceCoutDate:{[Sequelize.Op.gte]: currentDate}
+          },
+        ]
       },
       logging: console.log,
     });
@@ -799,6 +819,8 @@ class RoomCollection {
     for (const room of currentRooms) {
       const employeeData = room.booked_by?await tblEmployee.findOne({ where: { id: room.booked_by }}):await tblUsers.findOne({ where: { id: room.bookedByUser }});
       room.setDataValue('bookedByName', employeeData.Username?employeeData.Username:employeeData.username);
+      const cOutByemployeeData = await tblEmployee.findOne({ where: { id: room.checkoutBy }})
+      room.setDataValue('checkoutByName', cOutByemployeeData.Username?cOutByemployeeData.Username:null);
     }
     const currentRoomsData = await Promise.all(
       currentRooms.map(async (room) => {

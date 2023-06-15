@@ -66,7 +66,7 @@ router
   .post(adminAuth(), roomController.createBookingPara);
 
   router.route("/room-booking-report").get(adminAuth(),roomController.getRoomBookingReport);
-
+  
   router.route("/room-booking-stats-1").get(adminAuth(),roomController.getRoomBookingStats);
   router.route("/employee-booking-stats-1").get(auth(),roomController.getEmployeeBookingStats);
   router.route("/room-booking-stats-2").get(adminAuth(),roomController.getRoomBookingStats2);
@@ -75,7 +75,7 @@ router
   router.route("/employee-get-guests").get(auth(),roomController.employeeGetGuests);
   router.route("/checkOut").post(auth(), roomController.checkOut);
   router.route("/force-checkout").post(auth(), roomController.forceCheckOut);
-  router.route("/cancel-checkin").delete(roomController.cancelCheckin);
+  router.route("/cancel-checkin").delete(auth(),roomController.cancelCheckin);
   router.route("/update-checkin-payment").put(adminAuth(),roomController.updateCheckinPayment);
   router.route("/get-booking").post(roomController.getBookingFromBookingId);
   router.route("/cancel-history").get(auth(),roomController.getCancelHistory);

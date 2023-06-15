@@ -86,6 +86,10 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
   coutDate: {
     type: Sequelize.DATE,
   },
+  forceCoutDate: {
+    type: Sequelize.DATE,
+    allowNull: true,
+  },
   coutTime: {
     type: Sequelize.TIME,
   },
@@ -100,6 +104,11 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
     allowNull: true,
   },
   booked_by:{
+    type: Sequelize.INTEGER(50),
+    allowNull: true,
+  },
+  //will refer Employee table
+  checkoutBy:{
     type: Sequelize.INTEGER(50),
     allowNull: true,
   },
