@@ -824,8 +824,6 @@ class RoomCollection {
     for (const room of currentRooms) {
       const employeeData = room.booked_by?await tblEmployee.findOne({ where: { id: room.booked_by }}):await tblUsers.findOne({ where: { id: room.bookedByUser }});
       room.setDataValue('bookedByName', employeeData.Username?employeeData.Username:employeeData.username);
-      const cOutByemployeeData = await tblEmployee.findOne({ where: { id: room.checkoutBy }})
-      room.setDataValue('checkoutByName', cOutByemployeeData.Username?cOutByemployeeData.Username:null);
     }
     const currentRoomsData = await Promise.all(
       currentRooms.map(async (room) => {
