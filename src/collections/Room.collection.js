@@ -500,6 +500,11 @@ class RoomCollection {
         },raw:true})
         const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
         const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
+        const checkoutByName = checkin.checkoutBy?await tblEmployee.findOne({where:{id:checkin.checkoutBy},attributes:['Username'],raw:true}):{};
+        if(Object.keys(checkoutByName)){
+          checkin.cancelByName=checkoutByName.Username;
+        }
+        checkin.cancelDate=checkin.forceCoutDate
         checkin.dharmasalaName=dharmasalaData.name;
         checkin.categoryName=categoryData.name;
         checkin.facilityName=facilityData.name;
@@ -2008,6 +2013,11 @@ class RoomCollection {
       },raw:true})
       const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
       const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
+      const checkoutByName = checkin.checkoutBy?await tblEmployee.findOne({where:{id:checkin.checkoutBy},attributes:['Username'],raw:true}):{};
+        if(Object.keys(checkoutByName)){
+          checkin.checkoutByName=checkoutByName.Username;
+        }
+      checkin.forceCheckOutDate=checkin.forceCoutDate
       checkin.dharmasalaName=dharmasalaData.name;
       checkin.categoryName=categoryData.name;
       checkin.facilityName=facilityData.name;

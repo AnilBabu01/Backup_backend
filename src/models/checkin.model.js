@@ -44,6 +44,15 @@ const Room = sequelize.define(tbl.TBL_CHECKIN, {
   address: {
     type: Sequelize.STRING(400),
   },
+  bankName: {
+    type: Sequelize.STRING(400),
+  },
+  transactionId: {
+    type: Sequelize.STRING(400),
+  },
+  remarks: {
+    type: Sequelize.STRING(400),
+  },
   city: {
     type: Sequelize.STRING(255),
     allowNull: false,
