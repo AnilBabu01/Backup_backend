@@ -501,8 +501,12 @@ class RoomCollection {
         const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
         const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
         const checkoutByName = checkin.checkoutBy?await tblEmployee.findOne({where:{id:checkin.checkoutBy},attributes:['Username'],raw:true}):{};
-        if(Object.keys(checkoutByName)){
+        const bookedByName = checkin.booked_by?await tblEmployee.findOne({where:{id:checkin.booked_by},attributes:['Username'],raw:true}):{};
+        if(checkoutByName && Object.keys(checkoutByName)){
           checkin.cancelByName=checkoutByName.Username;
+        }
+        if(bookedByName && Object.keys(bookedByName)){
+          checkin.bookedByName=bookedByName.Username;
         }
         checkin.cancelDate=checkin.forceCoutDate
         checkin.dharmasalaName=dharmasalaData.name;
@@ -623,6 +627,16 @@ class RoomCollection {
       raw: true,
     });
     return checkinHistory;
+  };
+
+  roomBookingStats = async (req) => {
+
+    const query = 'SELECT CI.booked_by,SUM(CI.roomAmount) AS cancelled_amount,SUM(CI.advanceAmount) advanced_amount,ET.Username FROM tbl_checkins CI LEFT JOIN tbl_employees ET ON CI.booked_by=ET.id GROUP BY CI.booked_by;'
+    const [bookingData] = await sequelize.query(query, {
+      raw: true,
+      logging: console.log,
+    });
+
   };
 
   getDharmasalas = async (req) => {  
@@ -2012,8 +2026,12 @@ class RoomCollection {
       const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
       const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
       const checkoutByName = checkin.checkoutBy?await tblEmployee.findOne({where:{id:checkin.checkoutBy},attributes:['Username'],raw:true}):{};
+      const bookedByName = checkin.booked_by?await tblEmployee.findOne({where:{id:checkin.booked_by},attributes:['Username'],raw:true}):{};
         if(Object.keys(checkoutByName)){
           checkin.checkoutByName=checkoutByName.Username;
+        }
+        if(Object.keys(bookedByName)){
+          checkin.bookedByName=bookedByName.Username;
         }
       checkin.forceCheckOutDate=checkin.forceCoutDate
       checkin.dharmasalaName=dharmasalaData.name;
