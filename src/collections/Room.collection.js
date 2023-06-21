@@ -508,10 +508,10 @@ class RoomCollection {
         if(bookedByName && Object.keys(bookedByName)){
           checkin.bookedByName=bookedByName.Username;
         }
-        checkin.cancelDate=checkin.forceCoutDate
-        checkin.dharmasalaName=dharmasalaData.name;
-        checkin.categoryName=categoryData.name;
-        checkin.facilityName=facilityData.name;
+        checkin.cancelDate=checkin.forceCoutDate?checkin.forceCoutDate:'';
+        checkin.dharmasalaName=dharmasalaData.name?dharmasalaData.name:'';
+        checkin.categoryName=categoryData.name?categoryData.name:'';
+        checkin.facilityName=facilityData.name?facilityData.name:'';
       }
 
       return cancelledCheckins;
@@ -2033,10 +2033,11 @@ class RoomCollection {
         if(Object.keys(bookedByName)){
           checkin.bookedByName=bookedByName.Username;
         }
-      checkin.forceCheckOutDate=checkin.forceCoutDate
-      checkin.dharmasalaName=dharmasalaData.name;
-      checkin.categoryName=categoryData.name;
-      checkin.facilityName=facilityData.name;
+
+      checkin.forceCheckOutDate=checkin.forceCoutDate?checkin.forceCoutDate:""
+      checkin.dharmasalaName=dharmasalaData.name?dharmasalaData.name:"";
+      checkin.categoryName=categoryData.name?categoryData.name:"";
+      checkin.facilityName=facilityData.name?facilityData.name:"";
     }
 
     return checkinHistoryData;
