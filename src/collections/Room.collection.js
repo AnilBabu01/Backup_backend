@@ -498,8 +498,8 @@ class RoomCollection {
             [Op.gte]:checkin.RoomNo
           }
         },raw:true})
-        const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
-        const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
+        const categoryData =roomData.category_id?await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true}):""
+        const facilityData =roomData.facility_id?await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true}):""
         const checkoutByName = checkin.checkoutBy?await tblEmployee.findOne({where:{id:checkin.checkoutBy},attributes:['Username'],raw:true}):{};
         const bookedByName = checkin.booked_by?await tblEmployee.findOne({where:{id:checkin.booked_by},attributes:['Username'],raw:true}):{};
         if(checkoutByName && Object.keys(checkoutByName)){
@@ -2023,8 +2023,8 @@ class RoomCollection {
           [Op.gte]:checkin.RoomNo
         }
       },raw:true})
-      const categoryData =await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true})
-      const facilityData =await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true})
+      const categoryData =roomData.category_id?await TblRoomCategory.findOne({where:{category_id:JSON.parse(JSON.parse(roomData.category_id))},attributes:['name'],raw:true}):"";
+      const facilityData =roomData.facility_id?await TblFacility.findOne({where:{facility_id:JSON.parse(JSON.parse(roomData.facility_id))},attributes:['name'],raw:true}):"";
       const checkoutByName = checkin.checkoutBy?await tblEmployee.findOne({where:{id:checkin.checkoutBy},attributes:['Username'],raw:true}):{};
       const bookedByName = checkin.booked_by?await tblEmployee.findOne({where:{id:checkin.booked_by},attributes:['Username'],raw:true}):{};
         if(Object.keys(checkoutByName)){
